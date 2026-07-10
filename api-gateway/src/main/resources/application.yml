@@ -1,0 +1,115 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+             "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+        add-to-simple-url-handler-mapping: true
+      routes:
+        - id: authentication-service
+          uri: lb://AUTHENTICATION-SERVICE
+          predicates:
+            - Path=/api/v1/auth/**
+
+        - id: user-management-service
+          uri: lb://USER-MANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - AuthenticationFilter
+
+        - id: resume-management-service
+          uri: lb://RESUME-MANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/v1/resumes/**
+          filters:
+            - AuthenticationFilter
+
+        - id: job-description-service
+          uri: lb://JOB-DESCRIPTION-SERVICE
+          predicates:
+            - Path=/api/v1/jobs/**
+          filters:
+            - AuthenticationFilter
+
+        - id: candidate-ranking-service
+          uri: lb://CANDIDATE-RANKING-SERVICE
+          predicates:
+            - Path=/api/v1/ranking/**
+          filters:
+            - AuthenticationFilter
+
+        - id: recruiter-chat-service
+          uri: lb://RECRUITER-CHAT-SERVICE
+          predicates:
+            - Path=/api/v1/chat/**
+          filters:
+            - AuthenticationFilter
+
+        - id: ranking-screen-trigger
+          uri: lb://CANDIDATE-RANKING-SERVICE
+          predicates:
+            - Path=/api/v1/screening/screen
+          filters:
+            - AuthenticationFilter
+
+        - id: ai-screening-service
+          uri: lb://AI-SCREENING-SERVICE
+          predicates:
+            - Path=/api/v1/screening/**
+          filters:
+            - AuthenticationFilter
+
+        - id: copilot-route
+          uri: lb://RECRUITER-CHAT-SERVICE
+          predicates:
+            - Path=/api/v1/copilot/**
+          filters:
+            - AuthenticationFilter
+
+        - id: interview-scheduling-service
+          uri: lb://INTERVIEW-SCHEDULING-SERVICE
+          predicates:
+            - Path=/api/v1/interviews/**
+          filters:
+            - AuthenticationFilter
+
+        # Public routes for candidate confirm/reschedule via email link (no auth needed)
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret: 9a4f2c8d3b7a1e5f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

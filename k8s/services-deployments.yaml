@@ -1,0 +1,354 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: services-config
+  namespace: talent-platform
+data:
+  POSTGRES_URL: "jdbc:postgresql://postgres:5432/talent_db"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  KAFKA_SERVERS: "kafka:9092"
+---
+# 1. Authentication Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentication-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication-service
+  template:
+    metadata:
+      labels:
+        app: authentication-service
+    spec:
+      containers:
+        - name: authentication-service
+          image: talent-platform/authentication-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentication-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8081
+  selector:
+    app: authentication-service
+---
+# 2. User Management Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-management-service
+  template:
+    metadata:
+      labels:
+        app: user-management-service
+    spec:
+      containers:
+        - name: user-management-service
+          image: talent-platform/user-management-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: POSTGRES_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-management-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8082
+  selector:
+    app: user-management-service
+---
+# 3. Resume Management Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-management-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resume-management-service
+  template:
+    metadata:
+      labels:
+        app: resume-management-service
+    spec:
+      containers:
+        - name: resume-management-service
+          image: talent-platform/resume-management-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: POSTGRES_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: KAFKA_SERVERS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resume-management-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8083
+  selector:
+    app: resume-management-service
+---
+# 4. Job Description Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-description-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: job-description-service
+  template:
+    metadata:
+      labels:
+        app: job-description-service
+    spec:
+      containers:
+        - name: job-description-service
+          image: talent-platform/job-description-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8084
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: POSTGRES_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: KAFKA_SERVERS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-description-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8084
+  selector:
+    app: job-description-service
+---
+# 5. AI Screening Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-screening-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-screening-service
+  template:
+    metadata:
+      labels:
+        app: ai-screening-service
+    spec:
+      containers:
+        - name: ai-screening-service
+          image: talent-platform/ai-screening-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8085
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: POSTGRES_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: KAFKA_SERVERS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-screening-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8085
+  selector:
+    app: ai-screening-service
+---
+# 6. Candidate Ranking Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: candidate-ranking-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: candidate-ranking-service
+  template:
+    metadata:
+      labels:
+        app: candidate-ranking-service
+    spec:
+      containers:
+        - name: candidate-ranking-service
+          image: talent-platform/candidate-ranking-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8086
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: POSTGRES_URL
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: KAFKA_SERVERS
+            - name: SPRING_DATA_REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: REDIS_HOST
+            - name: SPRING_DATA_REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: REDIS_PORT
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: candidate-ranking-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8086
+  selector:
+    app: candidate-ranking-service
+---
+# 7. Recruiter Chat Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recruiter-chat-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recruiter-chat-service
+  template:
+    metadata:
+      labels:
+        app: recruiter-chat-service
+    spec:
+      containers:
+        - name: recruiter-chat-service
+          image: talent-platform/recruiter-chat-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8087
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: POSTGRES_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recruiter-chat-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8087
+  selector:
+    app: recruiter-chat-service
+---
+# 8. Notification Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: talent-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: talent-platform/notification-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8088
+          env:
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: services-config
+                  key: KAFKA_SERVERS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: talent-platform
+spec:
+  ports:
+    - port: 8088
+  selector:
+    app: notification-service

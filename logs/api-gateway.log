@@ -1,0 +1,63 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.0)
+
+2026-06-27T22:57:14.482+05:30  INFO 7172 --- [api-gateway] [           main] c.t.p.apigateway.ApiGatewayApplication   : Starting ApiGatewayApplication v0.0.1-SNAPSHOT using Java 17.0.17 with PID 7172 (C:\Users\HP\Downloads\AI_Screeming\api-gateway\target\api-gateway-0.0.1-SNAPSHOT.jar started by HP in C:\Users\HP\Downloads\AI_Screeming)
+2026-06-27T22:57:14.492+05:30  INFO 7172 --- [api-gateway] [           main] c.t.p.apigateway.ApiGatewayApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-06-27T22:57:19.687+05:30  INFO 7172 --- [api-gateway] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=f3604f63-57cd-3820-9109-24e334a7725b
+2026-06-27T22:57:25.315+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [After]
+2026-06-27T22:57:25.316+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Before]
+2026-06-27T22:57:25.319+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Between]
+2026-06-27T22:57:25.320+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Cookie]
+2026-06-27T22:57:25.321+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Header]
+2026-06-27T22:57:25.324+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Host]
+2026-06-27T22:57:25.328+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Method]
+2026-06-27T22:57:25.329+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Path]
+2026-06-27T22:57:25.331+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Query]
+2026-06-27T22:57:25.333+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [ReadBody]
+2026-06-27T22:57:25.336+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [RemoteAddr]
+2026-06-27T22:57:25.337+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [XForwardedRemoteAddr]
+2026-06-27T22:57:25.339+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Weight]
+2026-06-27T22:57:25.340+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [CloudFoundryRouteService]
+2026-06-27T22:57:39.545+05:30  INFO 7172 --- [api-gateway] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2026-06-27T22:57:40.992+05:30  INFO 7172 --- [api-gateway] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2026-06-27T22:57:41.196+05:30  WARN 7172 --- [api-gateway] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-06-27T22:57:41.857+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-06-27T22:57:42.166+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-06-27T22:57:42.215+05:30  INFO 7172 --- [api-gateway] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-27T22:57:42.265+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-27T22:57:42.267+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-27T22:57:42.269+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-27T22:57:42.273+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-27T22:57:42.277+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-27T22:57:42.281+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-06-27T22:57:42.285+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-27T22:57:47.173+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-27T22:57:47.177+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-06-27T22:57:47.189+05:30  INFO 7172 --- [api-gateway] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-06-27T22:57:47.196+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1782581267194 with initial instances count: 0
+2026-06-27T22:57:47.215+05:30  INFO 7172 --- [api-gateway] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application API-GATEWAY with eureka with status UP
+2026-06-27T22:57:47.217+05:30  INFO 7172 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782581267217, current=UP, previous=STARTING]
+2026-06-27T22:57:47.616+05:30  INFO 7172 --- [api-gateway] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/PRIYANSHU-JAISWAL:api-gateway:8090: registering service...
+2026-06-27T22:57:48.501+05:30  INFO 7172 --- [api-gateway] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/PRIYANSHU-JAISWAL:api-gateway:8090 - registration status: 204
+2026-06-27T22:58:01.699+05:30  INFO 7172 --- [api-gateway] [           main] o.s.b.web.embedded.netty.NettyWebServer  : Netty started on port 8090 (http)
+2026-06-27T22:58:01.806+05:30  INFO 7172 --- [api-gateway] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8090
+2026-06-27T22:58:17.531+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-27T22:58:17.705+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-27T22:58:17.706+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-27T22:58:17.710+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-27T22:58:17.711+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-27T22:58:17.712+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
+2026-06-27T22:58:17.713+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-27T22:58:17.816+05:30  INFO 7172 --- [api-gateway] [           main] c.t.p.apigateway.ApiGatewayApplication   : Started ApiGatewayApplication in 64.939 seconds (process running for 67.114)
+2026-06-27T22:58:18.251+05:30  INFO 7172 --- [api-gateway] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-27T23:02:42.327+05:30  INFO 7172 --- [api-gateway] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-27T23:02:51.589+05:30  INFO 7172 --- [api-gateway] [beatExecutor-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/PRIYANSHU-JAISWAL:api-gateway:8090 - Re-registering apps/API-GATEWAY
+2026-06-27T23:02:51.592+05:30  INFO 7172 --- [api-gateway] [beatExecutor-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/PRIYANSHU-JAISWAL:api-gateway:8090: registering service...
+2026-06-27T23:02:51.633+05:30  INFO 7172 --- [api-gateway] [beatExecutor-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/PRIYANSHU-JAISWAL:api-gateway:8090 - registration status: 204

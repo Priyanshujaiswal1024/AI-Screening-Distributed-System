@@ -1,0 +1,19 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default-receiver'
+
+receivers:
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'priyanshjais123@gmail.com'
+        from: 'alerts@talent-platform.com'
+        smarthost: 'smtp.gmail.com:587'
+        auth_username: 'priyanshjais123@gmail.com'
+        auth_password: 'lmzpdibuhsviewgf'
+        require_tls: true

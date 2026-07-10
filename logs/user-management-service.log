@@ -1,0 +1,626 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.0)
+
+2026-06-27T22:57:27.231+05:30  INFO 3376 --- [user-management-service] [           main] c.t.p.u.UserManagementServiceApplication : Starting UserManagementServiceApplication v0.0.1-SNAPSHOT using Java 17.0.17 with PID 3376 (C:\Users\HP\Downloads\AI_Screeming\user-management-service\target\user-management-service-0.0.1-SNAPSHOT.jar started by HP in C:\Users\HP\Downloads\AI_Screeming)
+2026-06-27T22:57:27.259+05:30  INFO 3376 --- [user-management-service] [           main] c.t.p.u.UserManagementServiceApplication : No active profile set, falling back to 1 default profile: "default"
+2026-06-27T22:57:35.653+05:30  INFO 3376 --- [user-management-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-27T22:57:37.124+05:30  INFO 3376 --- [user-management-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1428 ms. Found 2 JPA repository interfaces.
+2026-06-27T22:57:39.032+05:30  INFO 3376 --- [user-management-service] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=2d36e2fb-590f-3c98-8428-540117c464ee
+2026-06-27T22:57:49.931+05:30  INFO 3376 --- [user-management-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8069 (http)
+2026-06-27T22:57:50.003+05:30  INFO 3376 --- [user-management-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-27T22:57:50.005+05:30  INFO 3376 --- [user-management-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-06-27T22:57:50.194+05:30  INFO 3376 --- [user-management-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-06-27T22:57:50.198+05:30  INFO 3376 --- [user-management-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 22160 ms
+2026-06-27T22:58:07.123+05:30  INFO 3376 --- [user-management-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-27T22:58:11.941+05:30  INFO 3376 --- [user-management-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@21e702b8
+2026-06-27T22:58:11.964+05:30  INFO 3376 --- [user-management-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-27T22:58:13.448+05:30  INFO 3376 --- [user-management-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5435/user_db (PostgreSQL 15.4)
+2026-06-27T22:58:14.939+05:30  INFO 3376 --- [user-management-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 0 migrations (execution time 00:00.553s)
+2026-06-27T22:58:14.941+05:30  WARN 3376 --- [user-management-service] [           main] o.f.core.internal.command.DbValidate     : No migrations found. Are your locations set up correctly?
+2026-06-27T22:58:15.465+05:30  INFO 3376 --- [user-management-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-06-27T22:58:15.653+05:30  INFO 3376 --- [user-management-service] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-06-27T22:58:19.924+05:30  INFO 3376 --- [user-management-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-06-27T22:58:21.820+05:30  INFO 3376 --- [user-management-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.2.Final
+2026-06-27T22:58:22.172+05:30  INFO 3376 --- [user-management-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-06-27T22:58:26.035+05:30  INFO 3376 --- [user-management-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-27T22:58:26.935+05:30  WARN 3376 --- [user-management-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-27T22:58:27.564+05:30  INFO 3376 --- [user-management-service] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 15.4
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-27T22:58:40.260+05:30  INFO 3376 --- [user-management-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-27T22:58:40.825+05:30  INFO 3376 --- [user-management-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-27T22:59:00.130+05:30  WARN 3376 --- [user-management-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-27T22:59:02.399+05:30  WARN 3376 --- [user-management-service] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: e64ef026-3c11-4244-ba62-30494ed8198a
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-06-27T22:59:03.850+05:30  INFO 3376 --- [user-management-service] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-06-27T22:59:28.668+05:30  INFO 3376 --- [user-management-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2026-06-27T22:59:45.444+05:30  INFO 3376 --- [user-management-service] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2026-06-27T22:59:47.444+05:30  WARN 3376 --- [user-management-service] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-06-27T22:59:50.213+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.clients.admin.AdminClientConfig    : AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.controllers = []
+	bootstrap.servers = [localhost:9092]
+	client.dns.lookup = use_all_dns_ips
+	client.id = user-management-service-admin-0
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	enable.metrics.push = true
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+
+2026-06-27T22:59:51.617+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.8.1
+2026-06-27T22:59:51.618+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: 70d6ff42debf7e17
+2026-06-27T22:59:51.619+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1782581391598
+2026-06-27T22:59:57.416+05:30  WARN 3376 --- [user-management-service] [service-admin-0] o.a.k.clients.admin.KafkaAdminClient     : [AdminClient clientId=user-management-service-admin-0] The DescribeTopicPartitions API is not supported, using Metadata API to describe topics.
+2026-06-27T22:59:57.476+05:30  INFO 3376 --- [user-management-service] [service-admin-0] o.a.kafka.common.utils.AppInfoParser     : App info kafka.admin.client for user-management-service-admin-0 unregistered
+2026-06-27T22:59:57.504+05:30  INFO 3376 --- [user-management-service] [service-admin-0] o.apache.kafka.common.metrics.Metrics    : Metrics scheduler closed
+2026-06-27T22:59:57.510+05:30  INFO 3376 --- [user-management-service] [service-admin-0] o.apache.kafka.common.metrics.Metrics    : Closing reporter org.apache.kafka.common.metrics.JmxReporter
+2026-06-27T22:59:57.511+05:30  INFO 3376 --- [user-management-service] [service-admin-0] o.apache.kafka.common.metrics.Metrics    : Metrics reporters closed
+2026-06-27T22:59:58.951+05:30  INFO 3376 --- [user-management-service] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-06-27T22:59:59.371+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-06-27T22:59:59.415+05:30  INFO 3376 --- [user-management-service] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-27T22:59:59.522+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-27T22:59:59.530+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-27T22:59:59.531+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-27T22:59:59.532+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-27T22:59:59.533+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-27T22:59:59.534+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-06-27T22:59:59.535+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-27T23:00:07.170+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-27T23:00:07.246+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-06-27T23:00:07.310+05:30  INFO 3376 --- [user-management-service] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-06-27T23:00:07.331+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1782581407329 with initial instances count: 1
+2026-06-27T23:00:07.636+05:30  INFO 3376 --- [user-management-service] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application USER-MANAGEMENT-SERVICE with eureka with status UP
+2026-06-27T23:00:07.640+05:30  INFO 3376 --- [user-management-service] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782581407640, current=UP, previous=STARTING]
+2026-06-27T23:00:07.690+05:30  INFO 3376 --- [user-management-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_USER-MANAGEMENT-SERVICE/PRIYANSHU-JAISWAL:user-management-service:8069: registering service...
+2026-06-27T23:00:08.010+05:30  INFO 3376 --- [user-management-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8069 (http) with context path '/'
+2026-06-27T23:00:08.021+05:30  INFO 3376 --- [user-management-service] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8069
+2026-06-27T23:00:09.599+05:30  INFO 3376 --- [user-management-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_USER-MANAGEMENT-SERVICE/PRIYANSHU-JAISWAL:user-management-service:8069 - registration status: 204
+2026-06-27T23:00:13.238+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-user-management-group-retry-2000-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = user-management-group-retry-2000
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+2026-06-27T23:00:13.818+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2026-06-27T23:00:14.759+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.8.1
+2026-06-27T23:00:14.766+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: 70d6ff42debf7e17
+2026-06-27T23:00:14.767+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1782581414759
+2026-06-27T23:00:14.970+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.c.internals.LegacyKafkaConsumer  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Subscribed to topic(s): auth-events-retry-2000
+2026-06-27T23:00:15.061+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-user-management-group-dlt-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = user-management-group-dlt
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+2026-06-27T23:00:15.070+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2026-06-27T23:00:15.184+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.8.1
+2026-06-27T23:00:15.185+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: 70d6ff42debf7e17
+2026-06-27T23:00:15.186+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1782581415184
+2026-06-27T23:00:15.257+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Cluster ID: jhM2pLIBS0a3lxdugEdPHQ
+2026-06-27T23:00:15.280+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Discovered group coordinator localhost:9092 (id: 2147483646 rack: null)
+2026-06-27T23:00:15.298+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] (Re-)joining group
+2026-06-27T23:00:15.310+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.c.internals.LegacyKafkaConsumer  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Subscribed to topic(s): auth-events-dlt
+2026-06-27T23:00:15.348+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-user-management-group-retry-4000-3
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = user-management-group-retry-4000
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+2026-06-27T23:00:15.349+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2026-06-27T23:00:15.428+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Cluster ID: jhM2pLIBS0a3lxdugEdPHQ
+2026-06-27T23:00:15.430+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Discovered group coordinator localhost:9092 (id: 2147483646 rack: null)
+2026-06-27T23:00:15.433+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] (Re-)joining group
+2026-06-27T23:00:15.482+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.8.1
+2026-06-27T23:00:15.484+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: 70d6ff42debf7e17
+2026-06-27T23:00:15.484+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1782581415482
+2026-06-27T23:00:15.588+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Request joining group due to: need to re-join with the given member-id: consumer-user-management-group-dlt-2-9665e22b-e389-43dc-99be-b3f5193696e7
+2026-06-27T23:00:15.590+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] (Re-)joining group
+2026-06-27T23:00:15.589+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Request joining group due to: need to re-join with the given member-id: consumer-user-management-group-retry-2000-1-5f11456c-7027-428e-8352-18eb28d94919
+2026-06-27T23:00:15.594+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] (Re-)joining group
+2026-06-27T23:00:15.611+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.c.internals.LegacyKafkaConsumer  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Subscribed to topic(s): auth-events-retry-4000
+2026-06-27T23:00:15.649+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-user-management-group-4
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = user-management-group
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+2026-06-27T23:00:15.650+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2026-06-27T23:00:15.761+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.8.1
+2026-06-27T23:00:15.762+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: 70d6ff42debf7e17
+2026-06-27T23:00:15.768+05:30  INFO 3376 --- [user-management-service] [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1782581415754
+2026-06-27T23:00:15.778+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Cluster ID: jhM2pLIBS0a3lxdugEdPHQ
+2026-06-27T23:00:15.780+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Discovered group coordinator localhost:9092 (id: 2147483646 rack: null)
+2026-06-27T23:00:15.783+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] (Re-)joining group
+2026-06-27T23:00:15.857+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Request joining group due to: need to re-join with the given member-id: consumer-user-management-group-retry-4000-3-69e92308-a25d-4db1-a7b0-4f6bb0304778
+2026-06-27T23:00:15.859+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] (Re-)joining group
+2026-06-27T23:00:15.895+05:30  INFO 3376 --- [user-management-service] [           main] o.a.k.c.c.internals.LegacyKafkaConsumer  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Subscribed to topic(s): auth-events
+2026-06-27T23:00:16.255+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Cluster ID: jhM2pLIBS0a3lxdugEdPHQ
+2026-06-27T23:00:16.256+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Discovered group coordinator localhost:9092 (id: 2147483646 rack: null)
+2026-06-27T23:00:16.260+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] (Re-)joining group
+2026-06-27T23:00:16.474+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Request joining group due to: need to re-join with the given member-id: consumer-user-management-group-4-0defe943-85b6-4074-8e90-b502573d95a1
+2026-06-27T23:00:16.475+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] (Re-)joining group
+2026-06-27T23:00:16.669+05:30  INFO 3376 --- [user-management-service] [           main] c.t.p.u.UserManagementServiceApplication : Started UserManagementServiceApplication in 174.533 seconds (process running for 177.546)
+2026-06-27T23:00:18.657+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Successfully joined group with generation Generation{generationId=89, memberId='consumer-user-management-group-dlt-2-9665e22b-e389-43dc-99be-b3f5193696e7', protocol='range'}
+2026-06-27T23:00:18.658+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Successfully joined group with generation Generation{generationId=89, memberId='consumer-user-management-group-retry-2000-1-5f11456c-7027-428e-8352-18eb28d94919', protocol='range'}
+2026-06-27T23:00:18.861+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Finished assignment for group at generation 89: {consumer-user-management-group-retry-2000-1-5f11456c-7027-428e-8352-18eb28d94919=Assignment(partitions=[auth-events-retry-2000-0])}
+2026-06-27T23:00:18.862+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Finished assignment for group at generation 89: {consumer-user-management-group-dlt-2-9665e22b-e389-43dc-99be-b3f5193696e7=Assignment(partitions=[auth-events-dlt-0])}
+2026-06-27T23:00:18.900+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Successfully joined group with generation Generation{generationId=90, memberId='consumer-user-management-group-retry-4000-3-69e92308-a25d-4db1-a7b0-4f6bb0304778', protocol='range'}
+2026-06-27T23:00:18.902+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Finished assignment for group at generation 90: {consumer-user-management-group-retry-4000-3-69e92308-a25d-4db1-a7b0-4f6bb0304778=Assignment(partitions=[auth-events-retry-4000-0])}
+2026-06-27T23:00:21.957+05:30  INFO 3376 --- [user-management-service] [ement-group-dlt] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Successfully synced group in generation Generation{generationId=89, memberId='consumer-user-management-group-dlt-2-9665e22b-e389-43dc-99be-b3f5193696e7', protocol='range'}
+2026-06-27T23:00:21.958+05:30  INFO 3376 --- [user-management-service] [roup-retry-4000] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Successfully synced group in generation Generation{generationId=90, memberId='consumer-user-management-group-retry-4000-3-69e92308-a25d-4db1-a7b0-4f6bb0304778', protocol='range'}
+2026-06-27T23:00:21.958+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Successfully joined group with generation Generation{generationId=91, memberId='consumer-user-management-group-4-0defe943-85b6-4074-8e90-b502573d95a1', protocol='range'}
+2026-06-27T23:00:21.964+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Finished assignment for group at generation 91: {consumer-user-management-group-4-0defe943-85b6-4074-8e90-b502573d95a1=Assignment(partitions=[auth-events-0])}
+2026-06-27T23:00:21.978+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Successfully synced group in generation Generation{generationId=89, memberId='consumer-user-management-group-retry-2000-1-5f11456c-7027-428e-8352-18eb28d94919', protocol='range'}
+2026-06-27T23:00:21.981+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Notifying assignor about the new Assignment(partitions=[auth-events-retry-2000-0])
+2026-06-27T23:00:21.980+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Notifying assignor about the new Assignment(partitions=[auth-events-dlt-0])
+2026-06-27T23:00:21.980+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Notifying assignor about the new Assignment(partitions=[auth-events-retry-4000-0])
+2026-06-27T23:00:22.019+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Successfully synced group in generation Generation{generationId=91, memberId='consumer-user-management-group-4-0defe943-85b6-4074-8e90-b502573d95a1', protocol='range'}
+2026-06-27T23:00:22.021+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Notifying assignor about the new Assignment(partitions=[auth-events-0])
+2026-06-27T23:00:22.057+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-user-management-group-4, groupId=user-management-group] Adding newly assigned partitions: auth-events-0
+2026-06-27T23:00:22.057+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-user-management-group-dlt-2, groupId=user-management-group-dlt] Adding newly assigned partitions: auth-events-dlt-0
+2026-06-27T23:00:22.057+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-user-management-group-retry-2000-1, groupId=user-management-group-retry-2000] Adding newly assigned partitions: auth-events-retry-2000-0
+2026-06-27T23:00:22.075+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-user-management-group-retry-4000-3, groupId=user-management-group-retry-4000] Adding newly assigned partitions: auth-events-retry-4000-0
+2026-06-27T23:00:22.276+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.a.k.c.c.internals.ConsumerUtils        : Setting offset for partition auth-events-retry-2000-0 to the committed offset FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:9092 (id: 1 rack: null)], epoch=0}}
+2026-06-27T23:00:22.261+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.a.k.c.c.internals.ConsumerUtils        : Setting offset for partition auth-events-retry-4000-0 to the committed offset FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:9092 (id: 1 rack: null)], epoch=0}}
+2026-06-27T23:00:22.260+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerUtils        : Setting offset for partition auth-events-0 to the committed offset FetchPosition{offset=11, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:9092 (id: 1 rack: null)], epoch=0}}
+2026-06-27T23:00:22.260+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.a.k.c.c.internals.ConsumerUtils        : Setting offset for partition auth-events-dlt-0 to the committed offset FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:9092 (id: 1 rack: null)], epoch=0}}
+2026-06-27T23:00:22.378+05:30  INFO 3376 --- [user-management-service] [nio-8069-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-27T23:00:22.391+05:30  INFO 3376 --- [user-management-service] [nio-8069-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-27T23:00:22.398+05:30  INFO 3376 --- [user-management-service] [etry-4000-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : user-management-group-retry-4000: partitions assigned: [auth-events-retry-4000-0]
+2026-06-27T23:00:22.397+05:30  INFO 3376 --- [user-management-service] [etry-2000-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : user-management-group-retry-2000: partitions assigned: [auth-events-retry-2000-0]
+2026-06-27T23:00:22.397+05:30  INFO 3376 --- [user-management-service] [ner#0-dlt-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : user-management-group-dlt: partitions assigned: [auth-events-dlt-0]
+2026-06-27T23:00:22.398+05:30  INFO 3376 --- [user-management-service] [ntainer#0-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : user-management-group: partitions assigned: [auth-events-0]
+2026-06-27T23:00:22.419+05:30  INFO 3376 --- [user-management-service] [nio-8069-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 27 ms
+2026-06-27T23:01:16.855+05:30  WARN 3376 --- [user-management-service] [r-kafka-metrics] i.m.p.PrometheusMeterRegistry            : The meter (MeterId{name='kafka.consumer.fetch.manager.records.lag.max', tags=[tag(application=user-management-service),tag(client.id=consumer-user-management-group-dlt-2),tag(kafka.version=3.8.1),tag(spring.id=kafkaConsumerFactory.consumer-user-management-group-dlt-2)]}) registration has failed: Prometheus requires that all meters with the same name have the same set of tag keys. There is already an existing meter named 'kafka.consumer.fetch.manager.records.lag.max' containing tag keys [application, client.id, kafka.version, partition, spring.id, topic]. The meter you are attempting to register has keys [application, client.id, kafka.version, spring.id]. Note that subsequent logs will be logged at debug level.

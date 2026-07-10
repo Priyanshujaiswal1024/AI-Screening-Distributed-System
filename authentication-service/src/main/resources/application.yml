@@ -1,0 +1,54 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: authentication-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5435/auth_db
+    username: postgres
+    password: "2401301024"
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      url: rediss://default:gQAAAAAAAfhzAAIgcDFmYzk2ZjM4ZjAxMWE0ZTQ4OTc0ZDMwZGYxZGRjNjBjMQ@lucky-cowbird-129139.upstash.io:6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+jwt:
+  secret: 9a4f2c8d3b7a1e5f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d
+  expiration: 3600000
+  refresh-expiration: 604800000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

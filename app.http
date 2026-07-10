@@ -1,0 +1,169 @@
+### 1. Signup - Send OTP
+POST http://localhost:8090/api/v1/auth/signup-otp
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com",
+  "password": "Test@1234",
+  "fullName": "Priyanshu Jaiswal",
+  "companyName": "Talent Corp",
+  "phone": "9999999999"
+}
+
+
+### 2. Verify OTP
+POST http://localhost:8090/api/v1/auth/verify-otp
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com",
+  "otp": "437508"
+}
+
+
+
+### 3. Login
+POST http://localhost:8090/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@talent.com",
+  "password": "Admin@123"
+}
+
+---
+
+### 4. Forgot Password
+POST http://localhost:8090/api/v1/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com"
+}
+
+---
+
+### 5. Reset Password
+POST http://localhost:8090/api/v1/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com",
+  "otp": "869577",
+  "newPassword": "NewPass@1234"
+}
+
+---
+
+### 6. Resend OTP
+POST http://localhost:8090/api/v1/auth/resend-otp
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com"
+}
+
+### Login
+POST http://localhost:8090/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": "NewPass@1234"
+}
+
+###
+
+### Get User by Email
+GET http://localhost:8090/api/v1/users/email/priyanshjais123@gmail.com
+Authorization: Bearer
+
+---
+
+### Get User by ID
+GET http://localhost:8090/api/v1/users/768221dc-3109-4fe8-846d-88a55b3e3a0e
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml5YW5zaGphaXMxMjNAZ21haWwuY29tIiwicm9sZXMiOlsiUkVDUlVJVEVSIl0sInVzZXJJZCI6Ijc2ODIyMWRjLTMxMDktNGZlOC04NDZkLTg4YTU1YjNlM2EwZSIsImNvbXBhbnlOYW1lIjoiVGFsZW50IENvcnAiLCJpYXQiOjE3ODE5NzQ3MDksImV4cCI6MTc4MTk3ODMwOX0.-Aabqr6DbzXrV7IoGRUaXQ_osKG3tfNJl74mdCSLsuo
+
+---
+
+### Forgot Password
+POST http://localhost:8090/api/v1/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com"
+}
+
+---
+
+### Reset Password (paste OTP from email)
+POST http://localhost:8090/api/v1/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "priyanshjais123@gmail.com",
+  "otp": "PASTE_OTP_HERE",
+  "newPassword": "NewPass@1234"
+}
+
+---
+
+###
+### Create Job Description
+POST http://localhost:8090/api/v1/jobs
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB0YWxlbnQuY29tIiwicm9sZXMiOlsiQURNSU4iXSwidXNlcklkIjoiZDk3NzQ1ZjEtMTNhNC00MWUxLTljZGQtYzAwZDIxZDI4NWM3IiwiY29tcGFueU5hbWUiOiJUYWxlbnRQbGF0Zm9ybSIsImlhdCI6MTc4MjExOTM2NSwiZXhwIjoxNzgyMTIyOTY1fQ._YtYJ7f2hTsyGZjei5a9wIWy9ozoPmg6YyV4SbZ7ndo
+Content-Type: application/json
+
+{
+  "recruiterId": "768221dc-3109-4fe8-846d-88a55b3e3a0e",
+  "title": "Senior Java Developer",
+  "rawText": "We need a Spring Boot expert with Kafka experience. 5+ years Java, Spring Boot, Kafka, PostgreSQL required.",
+  "keySkills": ["Java", "Spring Boot", "Kafka", "PostgreSQL"],
+  "minExperienceYears": 1
+}
+###
+### Get All Jobs
+GET http://localhost:8090/api/v1/jobs
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml5YW5zaGphaXMxMjNAZ21haWwuY29tIiwicm9sZXMiOlsiUkVDUlVJVEVSIl0sInVzZXJJZCI6Ijc2ODIyMWRjLTMxMDktNGZlOC04NDZkLTg4YTU1YjNlM2EwZSIsImNvbXBhbnlOYW1lIjoiVGFsZW50IENvcnAiLCJpYXQiOjE3ODE5Nzg5NDMsImV4cCI6MTc4MTk4MjU0M30.fXqtel3UjqlmQ7z0K4gmws0n4dMOrj8PreiibB-4z2g
+
+---
+
+### Get User by Email
+GET http://localhost:8090/api/v1/users/email/priyanshjais123@gmail.com
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml5YW5zaGphaXMxMjNAZ21haWwuY29tIiwicm9sZXMiOlsiUkVDUlVJVEVSIl0sInVzZXJJZCI6Ijc2ODIyMWRjLTMxMDktNGZlOC04NDZkLTg4YTU1YjNlM2EwZSIsImNvbXBhbnlOYW1lIjoiVGFsZW50IENvcnAiLCJpYXQiOjE3ODE5NzUzMjgsImV4cCI6MTc4MTk3ODkyOH0.wnJHwGJESF9L9vj8gVoaZ96Md1Pt-qE9XrwdCZs_fZk
+
+---
+
+### Get User by ID
+GET http://localhost:8090/api/v1/users/768221dc-3109-4fe8-846d-88a55b3e3a0e
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml5YW5zaGphaXMxMjNAZ21haWwuY29tIiwicm9sZXMiOlsiUkVDUlVJVEVSIl0sInVzZXJJZCI6Ijc2ODIyMWRjLTMxMDktNGZlOC04NDZkLTg4YTU1YjNlM2EwZSIsImNvbXBhbnlOYW1lIjoiVGFsZW50IENvcnAiLCJpYXQiOjE3ODE5NzUzMjgsImV4cCI6MTc4MTk3ODkyOH0.wnJHwGJESF9L9vj8gVoaZ96Md1Pt-qE9XrwdCZs_fZk
+### Upload Resume
+POST http://localhost:8090/api/v1/resumes/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml5YW5zaGphaXMxMjNAZ21haWwuY29tIiwicm9sZXMiOlsiUkVDUlVJVEVSIl0sInVzZXJJZCI6Ijc2ODIyMWRjLTMxMDktNGZlOC04NDZkLTg4YTU1YjNlM2EwZSIsImNvbXBhbnlOYW1lIjoiVGFsZW50IENvcnAiLCJpYXQiOjE3ODE5NzQ3MDksImV4cCI6MTc4MTk3ODMwOX0.-Aabqr6DbzXrV7IoGRUaXQ_osKG3tfNJl74mdCSLsuo
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="resume.pdf"
+Content-Type: application/pdf
+
+< ./resume.pdf
+--boundary--
+
+###
+
+
+GET http://localhost:8069/api/v1/users/email/priyanshjais123@gmail.com
+####
+GET http://localhost:8090/api/v1/jobs/046cf132-78ca-4f37-ac9f-9ac063d93852
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwcml5YW5zaGphaXMxMjNAZ21haWwuY29tIiwicm9sZXMiOlsiUkVDUlVJVEVSIl0sInVzZXJJZCI6Ijc2ODIyMWRjLTMxMDktNGZlOC04NDZkLTg4YTU1YjNlM2EwZSIsImNvbXBhbnlOYW1lIjoiVGFsZW50IENvcnAiLCJpYXQiOjE3ODE5Nzg5NDMsImV4cCI6MTc4MTk4MjU0M30.fXqtel3UjqlmQ7z0K4gmws0n4dMOrj8PreiibB-4z2g
+#####
+POST http://localhost:8090/api/v1/resumes/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkB0YWxlbnQuY29tIiwicm9sZXMiOlsiQURNSU4iXSwidXNlcklkIjoiZDk3NzQ1ZjEtMTNhNC00MWUxLTljZGQtYzAwZDIxZDI4NWM3IiwiY29tcGFueU5hbWUiOiJUYWxlbnRQbGF0Zm9ybSIsImlhdCI6MTc4MjExOTM2NSwiZXhwIjoxNzgyMTIyOTY1fQ._YtYJ7f2hTsyGZjei5a9wIWy9ozoPmg6YyV4SbZ7ndo
+
+file=@C:/Users/HP/Downloads/Priyanshu_Resume__.pdf
+recruiterId=768221dc-3109-4fe8-846d-88a55b3e3a0e
+candidateName=Priyanshu Jaiswal
+candidateEmail=priyanshjais123@gmail.com
+
+###
+GET http://localhost:8083/api/v1/resumes/recruiter/768221dc-3109-4fe8-846d-88a55b3e3a0e

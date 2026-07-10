@@ -1,0 +1,28 @@
+# Frontend
+node_modules/
+dist/
+build/
+.env
+
+# Backend (Java/Spring Boot)
+target/
+*.jar
+*.war
+*.class
+.mvn/
+!mvnw
+!mvnw.cmd
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Python/Scripts
+__pycache__/
+*.pyc
+
+# OS Files
+.DS_Store
+Thumbs.db

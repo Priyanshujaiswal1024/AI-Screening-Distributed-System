@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Talent Intelligence Platform Dashboards'
+    orgId: 1
+    folder: 'Platform Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Render Sequence Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: white;
+            color: black;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+    <!-- Include local Mermaid JS -->
+    <script src="mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            mermaid.initialize({ 
+                startOnLoad: true,
+                theme: 'neutral',
+                sequence: {
+                    useMaxWidth: false,
+                    showSequenceNumbers: true,
+                    boxMargin: 10,
+                    messageMargin: 35
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h2 style="text-align: center;">Talent Intelligence Platform - User Signup to Screening Sequence Flow</h2>
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Recruiter as Recruiter Dashboard
+    participant Gateway as api-gateway (8090)
+    participant Auth as authentication-service
+    participant Notif as notification-service
+    participant UserSvc as user-management-service
+    participant JobSvc as job-description-service
+    participant ResumeSvc as resume-management-service
+    participant S3 as AWS S3 Storage
+    participant Kafka as Kafka Broker
+    participant AIScreen as ai-screening-service
+    participant Ollama as Ollama Llama3 (Local AI)
+    participant RankSvc as candidate-ranking-service
+    participant Redis as Redis Cache
+
+    %% Phase 1
+    rect rgb(230, 242, 255)
+        Note over Recruiter, UserSvc: Phase 1: User Signup, OTP Verification & Profile Creation
+    end
+    Recruiter->>Gateway: POST /api/v1/auth/signup-otp (Email, Password, Name)
+    Gateway->>Auth: Forward Request
+    Auth->>Auth: Generate OTP & Cache Registration State
+    Auth->>Kafka: Publish 'user-registered' OTP Event
+    Auth-->>Recruiter: 200 OK (OTP Sent)
+    
+    Kafka->>Notif: Consume OTP Event
+    Notif->>Recruiter: Send Verification Email (OTP Code)
+
+    Recruiter->>Gateway: POST /api/v1/auth/verify-otp (Email, OTP)
+    Gateway->>Auth: Forward Request
+    Auth->>Auth: Validate OTP & Save Credentials (auth_db)
+    Auth->>Kafka: Publish 'user-registered' Event (Complete Profile)
+    Auth-->>Recruiter: 201 Created (User Registered)
+
+    Kafka->>UserSvc: Consume 'user-registered'
+    UserSvc->>UserSvc: Save Recruiter Profile in user_db
+
+    %% Phase 2
+    rect rgb(230, 245, 245)
+        Note over Recruiter, Auth: Phase 2: Authentication & Token Issuance
+    end
+    Recruiter->>Gateway: POST /api/v1/auth/login (Email, Password)
+    Gateway->>Auth: Forward Request
+    Auth->>Auth: Validate Credentials & Sign JWT
+    Auth-->>Recruiter: 200 OK (JWT Bearer Token)
+
+    %% Phase 3
+    rect rgb(240, 240, 240)
+        Note over Recruiter, JobSvc: Phase 3: Job Description Provisioning
+    end
+    Recruiter->>Gateway: POST /api/v1/jobs + JWT
+    Note over Gateway: Gateway validates JWT & injects headers
+    Gateway->>JobSvc: Forward with X-User headers
+    JobSvc->>JobSvc: Save Job Description (job_db)
+    JobSvc-->>Recruiter: 201 Created (jobId)
+
+    %% Phase 4
+    rect rgb(245, 240, 245)
+        Note over Recruiter, AIScreen: Phase 4: Resume Ingestion, Parsing & Indexing
+    end
+    Recruiter->>Gateway: POST /api/v1/resumes/upload + JWT
+    Gateway->>ResumeSvc: Forward Request with X-User headers
+    ResumeSvc->>S3: Upload File Binary
+    S3-->>ResumeSvc: Return S3 fileUrl
+    ResumeSvc->>ResumeSvc: Save Resume as UPLOADED (resume_db)
+    ResumeSvc->>ResumeSvc: Initialize SAGA state (STARTED)
+    ResumeSvc->>ResumeSvc: Save transactional OutboxEvent (PENDING)
+    ResumeSvc-->>Recruiter: 202 Accepted
+
+    Note over ResumeSvc, Kafka: OutboxPoller publishes outbox event
+    ResumeSvc->>Kafka: Publish 'resume-uploaded' event
+
+    %% Phase 5
+    rect rgb(250, 245, 240)
+        Note over Kafka, Ollama: Phase 5: Text Extraction, Embeddings & Metadata Parsing
+    end
+    Kafka->>AIScreen: Consume 'resume-uploaded'
+    AIScreen->>S3: Download File Stream
+    AIScreen->>AIScreen: Extract Text via Apache Tika
+    AIScreen->>Ollama: Prompt Llama3 to extract details
+    Ollama-->>AIScreen: JSON Extracted Profile
+    AIScreen->>AIScreen: Chunk Text (Sentence-aware Chunker)
+    AIScreen->>AIScreen: Store Chunks & pgvector Embeddings (screening_db)
+    AIScreen->>ResumeSvc: Feign: Update status to 'PARSED'
+    AIScreen->>Kafka: Publish 'resume-parsed' event
+
+    %% Phase 6
+    rect rgb(240, 245, 250)
+        Note over Kafka, Redis: Phase 6: Score Calculations, Fallbacks & Sorted Set Caching
+    end
+    Kafka->>RankSvc: Consume 'resume-parsed'
+    RankSvc->>JobSvc: Feign: Fetch Job Description & skills
+    JobSvc-->>RankSvc: Return JD Details
+    RankSvc->>AIScreen: Call `/internal/screen`
+    AIScreen->>Ollama: Prompt Llama3 to evaluate scorecard
+    Ollama-->>AIScreen: Return scorecard
+    AIScreen-->>RankSvc: ScreeningResultDto
+    
+    alt Ollama is down / times out
+        RankSvc->>RankSvc: Fallback: Compute Cosine Similarity in Java
+    end
+
+    RankSvc->>RankSvc: Save ScreeningReport (ranking_db)
+    RankSvc->>Redis: ZSet cache score ADD jd:ranking:{jobId} matchScore
+    RankSvc->>Kafka: Publish 'resume-status-updated' (status = SCREENED)
+    
+    Kafka->>ResumeSvc: Consume status update → Mark Saga COMPLETED
+    </div>
+</body>
+</html>

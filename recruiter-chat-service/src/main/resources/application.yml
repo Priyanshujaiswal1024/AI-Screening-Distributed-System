@@ -1,0 +1,113 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: recruiter-chat-service
+  datasource:
+    url: jdbc:postgresql://localhost:5435/chat_db
+    username: postgres
+    password: "2401301024"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update # Auto-create tables for chat if missing
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        enabled: false # Disabled Chat in Ollama, using Groq instead
+        model: qwen2.5:1.5b
+      embedding:
+        enabled: true
+        model: nomic-embed-text
+    openai:
+      base-url: https://api.groq.com/openai/v1
+      api-key: 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
+      chat:
+        enabled: true
+        options:
+          model: llama-3.1-8b-instant
+      embedding:
+        enabled: false # Do not use OpenAI for embeddings (keeps it free via Ollama)
+    vectorstore:
+      pgvector:
+        dimension: 768
+        distance-type: COSINE_DISTANCE
+        initialize-schema: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: recruiter-chat-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: java.util.HashMap
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,circuitbreakers
+  endpoint:
+    health:
+      show-details: always
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 100
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 1
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        registerHealthIndicator: true
+    instances:
+      ai-screening-service:
+        baseConfig: default
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+    instances:
+      ai-screening-service:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 30s
+    instances:
+      ai-screening-service:
+        timeoutDuration: 30s

@@ -1,0 +1,74 @@
+groups:
+  - name: PlatformAlerts
+    rules:
+      - alert: ServiceInstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service instance {{ $labels.job }} is down"
+          description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been unreachable for more than 1 minute."
+
+      - alert: ApiGatewayLatencySpike
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application="api-gateway"}[5m])) by (le)) > 2.0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API Gateway p95 latency is high: {{ $value }}s"
+          description: "API Gateway p95 response time has been above 2.0 seconds for over 2 minutes."
+
+      - alert: ContainerCpuOveruse
+        expr: rate(container_cpu_usage_seconds_total{container!=""}[5m]) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container CPU usage is high: {{ $value }}%"
+          description: "Container {{ $labels.container }} CPU usage has exceeded 85% for over 5 minutes."
+
+      - alert: ContainerMemoryOveruse
+        expr: container_memory_working_set_bytes{container!=""} / container_spec_memory_limit_bytes{container!=""} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container Memory usage is high: {{ $value }}%"
+          description: "Container {{ $labels.container }} Memory usage is above 85% of limit for 5 minutes."
+
+      - alert: PostgresConnectionPoolExhaustion
+        expr: pg_stat_database_numbackends > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL connections are high: {{ $value }}"
+          description: "Postgres database connections have exceeded 80 backend workers for 2 minutes."
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage is high: {{ $value }}%"
+          description: "Redis instance has used more than 90% of configured max memory for 5 minutes."
+
+      - alert: KafkaConsumerLagGrowing
+        expr: sum(kafka_consumergroup_lag) by (consumergroup, topic) > 100
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer lag is growing: {{ $value }}"
+          description: "Consumer group {{ $labels.consumergroup }} for topic {{ $labels.topic }} has a lag exceeding 100 offsets for 3 minutes."
+
+      - alert: AiScreeningFailureRateSpike
+        expr: rate(ai_screenings_processed_total{status="FAILED"}[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AI Screening pipeline failures are spiking"
+          description: "AI Ingestion/Screening failure rate has spiked above 0.1 failures/sec for over 1 minute."

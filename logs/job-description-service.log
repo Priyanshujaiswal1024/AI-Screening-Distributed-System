@@ -1,0 +1,76 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.0)
+
+2026-06-27T22:57:34.419+05:30  INFO 13744 --- [job-description-service] [           main] c.t.p.j.JobDescriptionServiceApplication : Starting JobDescriptionServiceApplication v0.0.1-SNAPSHOT using Java 17.0.17 with PID 13744 (C:\Users\HP\Downloads\AI_Screeming\job-description-service\target\job-description-service-0.0.1-SNAPSHOT.jar started by HP in C:\Users\HP\Downloads\AI_Screeming)
+2026-06-27T22:57:34.427+05:30  INFO 13744 --- [job-description-service] [           main] c.t.p.j.JobDescriptionServiceApplication : No active profile set, falling back to 1 default profile: "default"
+2026-06-27T22:57:44.392+05:30  INFO 13744 --- [job-description-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-27T22:57:45.827+05:30  INFO 13744 --- [job-description-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1382 ms. Found 1 JPA repository interface.
+2026-06-27T22:57:48.795+05:30  INFO 13744 --- [job-description-service] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=ecd3ef4d-1654-3667-9817-5f22d7da5a8d
+2026-06-27T22:58:06.254+05:30  INFO 13744 --- [job-description-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8084 (http)
+2026-06-27T22:58:06.502+05:30  INFO 13744 --- [job-description-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-27T22:58:06.532+05:30  INFO 13744 --- [job-description-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-06-27T22:58:07.941+05:30  INFO 13744 --- [job-description-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-06-27T22:58:07.945+05:30  INFO 13744 --- [job-description-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 33078 ms
+2026-06-27T22:58:24.459+05:30  INFO 13744 --- [job-description-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-06-27T22:58:25.476+05:30  INFO 13744 --- [job-description-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.2.Final
+2026-06-27T22:58:25.981+05:30  INFO 13744 --- [job-description-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-06-27T22:58:28.419+05:30  INFO 13744 --- [job-description-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-27T22:58:28.677+05:30  INFO 13744 --- [job-description-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-27T22:58:31.050+05:30  INFO 13744 --- [job-description-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@619854a3
+2026-06-27T22:58:31.063+05:30  INFO 13744 --- [job-description-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-27T22:58:32.376+05:30  WARN 13744 --- [job-description-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-27T22:58:32.806+05:30  INFO 13744 --- [job-description-service] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 15.4
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-27T22:58:53.534+05:30  INFO 13744 --- [job-description-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-27T22:58:54.646+05:30  INFO 13744 --- [job-description-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-27T22:59:34.045+05:30  INFO 13744 --- [job-description-service] [           main] o.s.ai.vectorstore.PgVectorStore         : Using the vector table name: vector_store. Is empty: false
+2026-06-27T22:59:34.116+05:30  INFO 13744 --- [job-description-service] [           main] o.s.ai.vectorstore.PgVectorStore         : Initializing PGVectorStore schema for table: vector_store in schema: public
+2026-06-27T22:59:34.118+05:30  INFO 13744 --- [job-description-service] [           main] o.s.ai.vectorstore.PgVectorStore         : vectorTableValidationsEnabled false
+2026-06-27T22:59:38.221+05:30  WARN 13744 --- [job-description-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-27T22:59:39.078+05:30  WARN 13744 --- [job-description-service] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 528f6da4-9e8f-4bdb-8d41-0cd8850d2933
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-06-27T22:59:39.377+05:30  INFO 13744 --- [job-description-service] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-06-27T22:59:57.190+05:30  INFO 13744 --- [job-description-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2026-06-27T23:00:14.227+05:30  INFO 13744 --- [job-description-service] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2026-06-27T23:00:15.518+05:30  WARN 13744 --- [job-description-service] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-06-27T23:00:18.312+05:30  INFO 13744 --- [job-description-service] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-06-27T23:00:19.170+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-06-27T23:00:19.265+05:30  INFO 13744 --- [job-description-service] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-27T23:00:19.440+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-27T23:00:19.441+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-27T23:00:19.441+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-27T23:00:19.443+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-27T23:00:19.444+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-27T23:00:19.445+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-06-27T23:00:19.446+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-27T23:00:24.286+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-27T23:00:24.313+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-06-27T23:00:24.344+05:30  INFO 13744 --- [job-description-service] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-06-27T23:00:24.392+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1782581424373 with initial instances count: 1
+2026-06-27T23:00:24.626+05:30  INFO 13744 --- [job-description-service] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application JOB-DESCRIPTION-SERVICE with eureka with status UP
+2026-06-27T23:00:24.629+05:30  INFO 13744 --- [job-description-service] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782581424629, current=UP, previous=STARTING]
+2026-06-27T23:00:24.673+05:30  INFO 13744 --- [job-description-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_JOB-DESCRIPTION-SERVICE/PRIYANSHU-JAISWAL:job-description-service:8084: registering service...
+2026-06-27T23:00:25.068+05:30  INFO 13744 --- [job-description-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8084 (http) with context path '/'
+2026-06-27T23:00:25.072+05:30  INFO 13744 --- [job-description-service] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8084
+2026-06-27T23:00:26.160+05:30  INFO 13744 --- [job-description-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_JOB-DESCRIPTION-SERVICE/PRIYANSHU-JAISWAL:job-description-service:8084 - registration status: 204
+2026-06-27T23:00:30.686+05:30  INFO 13744 --- [job-description-service] [nio-8084-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-27T23:00:30.688+05:30  INFO 13744 --- [job-description-service] [nio-8084-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-27T23:00:30.715+05:30  INFO 13744 --- [job-description-service] [nio-8084-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 12 ms
+2026-06-27T23:00:39.204+05:30  INFO 13744 --- [job-description-service] [           main] c.t.p.j.JobDescriptionServiceApplication : Started JobDescriptionServiceApplication in 191.084 seconds (process running for 195.68)

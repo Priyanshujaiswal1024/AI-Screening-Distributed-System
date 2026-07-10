@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: talent-postgres
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2401301024
+      POSTGRES_DB: talent_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - talent-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: talent-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - talent-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: talent-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - talent-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: talent-kafka
+    restart: on-failure
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - talent-network
+
+  # ── Observability Stack ───────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: talent-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert.rules.yml:/etc/prometheus/alert.rules.yml
+    depends_on:
+      - kafka
+      - postgres
+      - redis
+    networks:
+      - talent-network
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: talent-grafana
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning/datasources/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./monitoring/grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./monitoring/grafana/dashboards/platform_dashboard.json:/var/lib/grafana/dashboards/platform_dashboard.json
+    depends_on:
+      - prometheus
+    networks:
+      - talent-network
+
+  alertmanager:
+    image: prom/alertmanager:v0.25.0
+    container_name: talent-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    networks:
+      - talent-network
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.12.0
+    container_name: talent-postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:2401301024@postgres:5432/talent_db?sslmode=disable"
+    depends_on:
+      - postgres
+    networks:
+      - talent-network
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.51.0
+    container_name: talent-redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - talent-network
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    container_name: talent-kafka-exporter
+    restart: on-failure
+    ports:
+      - "9308:9308"
+    command:
+      - --kafka.server=kafka:29092
+    depends_on:
+      - kafka
+    networks:
+      - talent-network
+
+  node-exporter:
+    image: prom/node-exporter:v1.6.0
+    container_name: talent-node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - talent-network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: talent-cadvisor
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - talent-network
+
+networks:
+  talent-network:
+    name: talent-network
+    driver: bridge
+
+volumes:
+  pgdata:
