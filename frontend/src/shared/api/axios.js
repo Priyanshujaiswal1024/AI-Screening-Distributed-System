@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 // export { endpoints } from './endpoints'
 export const api = axios.create({
-    baseURL: 'http://localhost:8090', // API Gateway URL
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://13.53.212.71:8090', // API Gateway URL
     timeout: 180000
 })
 
