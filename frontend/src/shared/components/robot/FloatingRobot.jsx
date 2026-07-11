@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Trash2, Minimize2, Volume2, VolumeX } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { speakText, stopSpeaking } from '../../utils/speech'
 import { useRobotStore } from '../../store/robotStore'
 import { useAuthStore } from '../../store/authStore'
@@ -119,7 +121,11 @@ export default function FloatingRobot() {
             setMood('happy')
             setTimeout(() => setMood('idle'), 2000)
         } catch (err) {
-            const errReply = 'I had trouble connecting to the backend. Make sure all services are running.'
+            let errReply = 'I had trouble connecting to the backend. Make sure all services are running.'
+            const msg = err.response?.data?.message || ''
+            if (err.response?.status === 429 || msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+                errReply = "Groq's AI limit reached, please try again after 20 seconds ⏳"
+            }
             addMessage({
                 role: 'ai',
                 text: errReply,
@@ -227,8 +233,22 @@ export default function FloatingRobot() {
                                 {messages.map((msg, i) => (
                                     <div key={i} className={cn('flex flex-col', msg.role === 'user' ? 'items-end' : 'items-start')}>
                                         <div className="flex items-end gap-1.5" style={{ flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', maxWidth: '85%' }}>
-                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}>
-                                                {msg.text}
+                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { display: 'flex', flexDirection: 'column', gap: '0.5rem' } : {}}>
+                                                {msg.role === 'ai' ? (
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                    }}>
+                                                        {msg.text}
+                                                    </ReactMarkdown>
+                                                ) : (
+                                                    msg.text
+                                                )}
                                             </div>
                                             {msg.role === 'ai' && (
                                                 <button

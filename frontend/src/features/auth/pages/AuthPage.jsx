@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import {
     Zap, Mail, Lock, User, Building2,
     ArrowRight, RefreshCw, KeyRound, Eye, EyeOff,
-    Brain, Cpu, GitMerge, Shield,
+    Brain, Cpu, GitMerge, Shield, AlertCircle, X, Github
 } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
@@ -158,6 +158,7 @@ export default function AuthPage() {
     const [step, setStep]           = useState('login')
     const [pendingEmail, setPending] = useState('')
     const [robotMood, setMood]       = useState('idle')
+    const [showBanner, setShowBanner] = useState(true)
 
     const { login } = useAuthStore()
     const navigate  = useNavigate()
@@ -330,6 +331,57 @@ export default function AuthPage() {
                 padding: '32px 24px', position: 'relative', zIndex: 1,
             }}>
                 <div style={{ width: '100%', maxWidth: 400 }}>
+
+                    {/* AWS Cost Warning Banner (Inline) */}
+                    <AnimatePresence>
+                        {showBanner && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                style={{ marginBottom: 28 }}
+                            >
+                                <div style={{
+                                    background: 'rgba(234, 179, 8, 0.08)',
+                                    border: '1px solid rgba(234, 179, 8, 0.15)',
+                                    borderRadius: 16,
+                                    padding: '20px 24px',
+                                }}>
+                                    <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                                        <AlertCircle size={22} color="#eab308" style={{ marginTop: 2, flexShrink: 0 }} />
+                                        <div>
+                                            <div style={{ fontSize: 15, fontWeight: 800, color: '#eab308', marginBottom: 6 }}>
+                                                Dear Recruiter,
+                                            </div>
+                                            <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 16 }}>
+                                                To optimize AWS EC2 cloud costs for this heavy microservices project, the backend may be sleeping. If login fails, please review the architecture on GitHub!
+                                            </div>
+                                            <a
+                                                href="https://github.com/Priyanshujaiswal1024/AI-Screening-Distributed-System"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                                    fontSize: 12, fontWeight: 700, color: '#070a10',
+                                                    background: '#eab308', padding: '8px 16px', borderRadius: 8,
+                                                    textDecoration: 'none'
+                                                }}
+                                            >
+                                                <Github size={14} />
+                                                View Source Code
+                                            </a>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowBanner(false)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(234,179,8,0.5)', marginLeft: 'auto' }}
+                                        >
+                                            <X size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     {/* Mobile logo */}
                     <div className="lg:hidden" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }}>

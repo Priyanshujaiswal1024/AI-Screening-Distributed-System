@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Send, RefreshCw, ChevronDown, Bot, Trash2, Sparkles, User, Volume2, VolumeX } from 'lucide-react'
 import { speakText, stopSpeaking } from '../../../shared/utils/speech'
 import { format } from 'date-fns'
@@ -210,7 +212,10 @@ export default function ChatPage() {
             setMood('happy')
             setTimeout(() => setMood('idle'), 2000)
         } catch (err) {
-            const msg = err.response?.data?.message || 'Chat service unavailable. Ensure all backend services are running.'
+            let msg = err.response?.data?.message || 'Chat service unavailable. Ensure all backend services are running.'
+            if (err.response?.status === 429 || msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+                msg = "Groq's AI limit reached, please try again after 20 seconds ⏳"
+            }
             setMessages(prev => {
                 const next = [...prev, { role: 'ai', text: msg, ts: new Date().toISOString() }]
                 if (autoSpeak) {
@@ -486,8 +491,22 @@ export default function ChatPage() {
                                 </div>
                             )}
 
-                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}>
-                                {msg.text}
+                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { display: 'flex', flexDirection: 'column', gap: '0.5rem' } : {}}>
+                                {msg.role === 'ai' ? (
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                    }}>
+                                        {msg.text}
+                                    </ReactMarkdown>
+                                ) : (
+                                    msg.text
+                                )}
                             </div>
                             <span style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 1 }}>
                                 {msg.ts ? format(new Date(msg.ts), 'HH:mm') : ''}

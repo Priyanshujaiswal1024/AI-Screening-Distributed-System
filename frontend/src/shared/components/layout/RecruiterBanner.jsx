@@ -7,7 +7,7 @@ export default function RecruiterBanner() {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 relative">
+    <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-3 fixed top-0 left-0 w-full z-[9999] backdrop-blur-md">
       <div className="max-w-7xl mx-auto flex items-start sm:items-center gap-3">
         <div className="flex-shrink-0 pt-0.5 sm:pt-0">
           <AlertCircle className="h-5 w-5 text-yellow-500" />

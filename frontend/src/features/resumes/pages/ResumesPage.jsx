@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
     UploadCloud, FileText, CheckCircle2, AlertCircle, Clock,
     RefreshCw, X, Search, ChevronDown, Sparkles, MessageSquare, Brain, HelpCircle, Briefcase, Copy, Bot, Volume2, VolumeX
@@ -54,6 +56,52 @@ const getCandidateMetrics = (r) => {
     return { totalExp, noticeDays, skills, clientReady }
 }
 
+/* ── Formatter for AI Summary ── */
+const renderSummary = (text) => {
+    if (!text) return null;
+    if (!text.includes('###')) return <span style={{ whiteSpace: 'pre-wrap' }}>{text}</span>;
+
+    const parts = text.split('###').filter(p => p.trim() !== '');
+    return parts.map((part, index) => {
+        const match = part.match(/^\s*(.*?\(Confidence:\s*\d+%\))\s*(.*)/i);
+        if (match) {
+            const title = match[1];
+            const content = match[2];
+            return (
+                <div key={index} style={{ marginBottom: 12, paddingBottom: index < parts.length - 1 ? 12 : 0, borderBottom: index < parts.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--brand)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--brand)', flexShrink: 0 }}></span>
+                        {title.trim()}
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: 12 }}>
+                        {content.trim()}
+                    </div>
+                </div>
+            );
+        }
+
+        const fallbackMatch = part.match(/^\s*([A-Z\s&]+(?:\([^)]+\))?)\s+(.*)/);
+        if (fallbackMatch) {
+            return (
+                <div key={index} style={{ marginBottom: 12, paddingBottom: index < parts.length - 1 ? 12 : 0, borderBottom: index < parts.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--brand)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--brand)', flexShrink: 0 }}></span>
+                        {fallbackMatch[1].trim()}
+                    </div>
+                    <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: 12 }}>
+                        {fallbackMatch[2].trim()}
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div key={index} style={{ marginBottom: 12 }}>
+                {part.trim()}
+            </div>
+        );
+    });
+};
 
 /* ── Robust Clipboard Copy with Fallback ── */
 const copyTextToClipboard = (text, successMsg = 'Copied successfully! 📋') => {
@@ -333,7 +381,10 @@ export default function ResumesPage() {
                 speakText(reply)
             }
         } catch (err) {
-            const msg = err.response?.data?.message || 'Chat service unavailable.'
+            let msg = err.response?.data?.message || 'Chat service unavailable.'
+            if (err.response?.status === 429 || msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+                msg = "Groq's AI limit reached, please try again after 20 seconds ⏳"
+            }
             setChatMessages(prev => [...prev, { role: 'ai', text: msg, ts: new Date().toISOString() }])
             toast.error('Chat failed')
         } finally {
@@ -364,7 +415,10 @@ export default function ResumesPage() {
                 speakText(reply)
             }
         } catch (err) {
-            const msg = err.response?.data?.message || 'Chat service unavailable.'
+            let msg = err.response?.data?.message || 'Chat service unavailable.'
+            if (err.response?.status === 429 || msg.includes('429') || msg.toLowerCase().includes('rate limit')) {
+                msg = "Groq's AI limit reached, please try again after 20 seconds ⏳"
+            }
             setPipelineMessages(prev => [...prev, { role: 'ai', text: msg, ts: new Date().toISOString() }])
             toast.error('Chat failed')
         } finally {
@@ -1352,9 +1406,9 @@ export default function ResumesPage() {
                                                                 </div>
                                                                 <div style={{
                                                                     marginTop: 6, fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5,
-                                                                    padding: 10, borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)'
+                                                                    padding: 16, borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)'
                                                                 }}>
-                                                                    {activeReport.structuredSummary}
+                                                                    {renderSummary(activeReport.structuredSummary)}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1459,8 +1513,22 @@ export default function ResumesPage() {
                                                             </button>
                                                         )}
                                                     </div>
-                                                    <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={{ fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-line' }}>
-                                                        {msg.text}
+                                                    <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { fontSize: 12, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' } : { fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-line' }}>
+                                                        {msg.role === 'ai' ? (
+                                                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                                p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                                ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                                h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                                h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                                h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                            }}>
+                                                                {msg.text}
+                                                            </ReactMarkdown>
+                                                        ) : (
+                                                            msg.text
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
@@ -1704,8 +1772,22 @@ export default function ResumesPage() {
                                                     </button>
                                                 )}
                                             </div>
-                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={{ fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-wrap' }}>
-                                                {msg.text}
+                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { fontSize: 12, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' } : { fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-wrap' }}>
+                                                {msg.role === 'ai' ? (
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                    }}>
+                                                        {msg.text}
+                                                    </ReactMarkdown>
+                                                ) : (
+                                                    msg.text
+                                                )}
                                             </div>
                                         </div>
                                     ))}
