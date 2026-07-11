@@ -23,6 +23,20 @@ services:
     networks:
       - talent-network
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: talent-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: talent-zookeeper
@@ -267,6 +281,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
     networks:
       - talent-network
     deploy:
@@ -305,6 +320,7 @@ services:
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
     networks:
       - talent-network
     deploy:
@@ -357,3 +373,4 @@ networks:
 
 volumes:
   pgdata:
+  ollama_data:
