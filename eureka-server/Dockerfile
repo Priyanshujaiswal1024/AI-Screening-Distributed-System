@@ -1,6 +1,5 @@
 FROM eclipse-temurin:21-jre-alpine
-VOLUME /tmp
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
-# powershell -ExecutionPolicy Bypass -File .\start_all_system.ps1
+WORKDIR /app
+COPY target/*.jar app.jar
+ENV JAVA_OPTS="-Xms128m -Xmx256m"
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

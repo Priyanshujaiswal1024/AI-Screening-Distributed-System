@@ -1,5 +1,5 @@
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY target/interview-scheduling-service-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8095
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY target/*.jar app.jar
+ENV JAVA_OPTS="-Xms128m -Xmx256m"
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

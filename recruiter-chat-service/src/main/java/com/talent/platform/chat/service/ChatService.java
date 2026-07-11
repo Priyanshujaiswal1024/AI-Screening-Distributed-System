@@ -143,7 +143,7 @@ public class ChatService {
                         SYSTEM SCREENING REPORT:
                         %s
                         """,
-                        candidateName, fullResumeText, candidateReport.isEmpty() ? "No screening report available yet." : candidateReport);
+                        candidateName, fullResumeText, (candidateReport == null || candidateReport.isEmpty()) ? "No screening report available yet." : candidateReport);
             }
 
             if (jobId != null) {

@@ -149,6 +149,188 @@ services:
     networks:
       - talent-network
 
+  # ── Microservices ──────────────────────────────────────────────────────────
+
+  eureka-server:
+    build: ./eureka-server
+    container_name: talent-eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: talent-api-gateway
+    ports:
+      - "8222:8222"
+    depends_on:
+      - eureka-server
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  authentication-service:
+    build: ./authentication-service
+    container_name: talent-auth-service
+    depends_on:
+      - eureka-server
+      - postgres
+      - redis
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+      - SPRING_DATA_REDIS_HOST=redis
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  user-management-service:
+    build: ./user-management-service
+    container_name: talent-user-service
+    depends_on:
+      - eureka-server
+      - postgres
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  resume-management-service:
+    build: ./resume-management-service
+    container_name: talent-resume-service
+    depends_on:
+      - eureka-server
+      - postgres
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  job-description-service:
+    build: ./job-description-service
+    container_name: talent-job-service
+    depends_on:
+      - eureka-server
+      - postgres
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  ai-screening-service:
+    build: ./ai-screening-service
+    container_name: talent-ai-screening-service
+    depends_on:
+      - eureka-server
+      - postgres
+      - kafka
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  candidate-ranking-service:
+    build: ./candidate-ranking-service
+    container_name: talent-candidate-ranking-service
+    depends_on:
+      - eureka-server
+      - postgres
+      - kafka
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  recruiter-chat-service:
+    build: ./recruiter-chat-service
+    container_name: talent-recruiter-chat-service
+    depends_on:
+      - eureka-server
+      - postgres
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  notification-service:
+    build: ./notification-service
+    container_name: talent-notification-service
+    depends_on:
+      - eureka-server
+      - postgres
+      - kafka
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
+  interview-scheduling-service:
+    build: ./interview-scheduling-service
+    container_name: talent-interview-service
+    depends_on:
+      - eureka-server
+      - postgres
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
+    networks:
+      - talent-network
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+
 networks:
   talent-network:
     name: talent-network

@@ -56,8 +56,8 @@ spring:
         model: nomic-embed-text
 
     openai:
-      base-url: https://api.groq.com/openai/v1
-      api-key: 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
+      base-url: https://api.groq.com/openai
+      api-key: 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
       chat:
         enabled: true
         options:
