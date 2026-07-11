@@ -172,6 +172,7 @@ services:
       - eureka-server
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
     networks:
       - talent-network
     deploy:
@@ -188,6 +189,7 @@ services:
       - redis
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_DATA_REDIS_HOST=redis
     networks:
@@ -205,6 +207,7 @@ services:
       - postgres
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
     networks:
       - talent-network
@@ -221,6 +224,7 @@ services:
       - postgres
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
     networks:
       - talent-network
@@ -237,6 +241,7 @@ services:
       - postgres
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
     networks:
       - talent-network
@@ -254,6 +259,7 @@ services:
       - kafka
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     networks:
@@ -272,6 +278,7 @@ services:
       - kafka
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     networks:
@@ -289,6 +296,7 @@ services:
       - postgres
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
     networks:
       - talent-network
@@ -306,6 +314,7 @@ services:
       - kafka
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     networks:
@@ -323,6 +332,7 @@ services:
       - postgres
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
     networks:
       - talent-network
