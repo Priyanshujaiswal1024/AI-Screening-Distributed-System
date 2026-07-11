@@ -161,7 +161,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   api-gateway:
     build: ./api-gateway
@@ -178,7 +178,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   authentication-service:
     build: ./authentication-service
@@ -197,7 +197,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   user-management-service:
     build: ./user-management-service
@@ -214,7 +214,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   resume-management-service:
     build: ./resume-management-service
@@ -231,7 +231,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   job-description-service:
     build: ./job-description-service
@@ -248,7 +248,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   ai-screening-service:
     build: ./ai-screening-service
@@ -267,7 +267,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   candidate-ranking-service:
     build: ./candidate-ranking-service
@@ -286,7 +286,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   recruiter-chat-service:
     build: ./recruiter-chat-service
@@ -303,7 +303,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   notification-service:
     build: ./notification-service
@@ -322,7 +322,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
   interview-scheduling-service:
     build: ./interview-scheduling-service
@@ -339,7 +339,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 300M
+          memory: 600M
 
 networks:
   talent-network:
