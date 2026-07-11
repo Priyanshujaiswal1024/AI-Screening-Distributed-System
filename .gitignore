@@ -26,3 +26,22 @@ __pycache__/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Extra Development Junk
+*.ps1
+*.py
+*.sql
+*.pdf
+*.html
+*.http
+*.json
+!package.json
+!package-lock.json
+!skills.json
+!models.json
+!test.json
+mermaid.min.js
+walkthrough.md
+backend_*.md
+interview_*.md
+user_*.md
