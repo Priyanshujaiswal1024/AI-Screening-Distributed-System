@@ -167,7 +167,7 @@ services:
     build: ./api-gateway
     container_name: talent-api-gateway
     ports:
-      - "8222:8222"
+      - "8090:8090"
     depends_on:
       - eureka-server
     environment:
