@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🚀 TalentIQ - Enterprise AI-Powered Screening & RAG Chatbot</h1>
+  <h1>🚀 TalentIQ - Enterprise AI-Powered Resume Screening & RAG Chatbot</h1>
   <p><strong>A highly scalable, event-driven Microservices architecture for automated Resume Parsing, AI Screening, Candidate Ranking, and Conversational RAG.</strong></p>
 </div>
 
