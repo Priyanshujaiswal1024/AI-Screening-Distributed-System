@@ -70,5 +70,5 @@ aws:
   s3:
     bucket: talent-intelligence-resumes-2026
     region: eu-north-1
-    access-key: AKIARWG53UC5HMAGAQ5V
-    secret-key: 5JNucOx+8zL8CMXVuIPgc4fNW3CM5ARduiCHdKS8
+    access-key: ${AWS_ACCESS_KEY_ID:your_aws_access_key}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:your_aws_secret_key}

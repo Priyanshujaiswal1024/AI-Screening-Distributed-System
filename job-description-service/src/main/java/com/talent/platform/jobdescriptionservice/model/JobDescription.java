@@ -38,6 +38,15 @@ public class JobDescription {
     @Column(name = "min_experience_years")
     private int minExperienceYears;
 
+    @Column(name = "employment_type")
+    private String employmentType;
+
+    @Column(name = "work_mode")
+    private String workMode;
+
+    @Column(name = "location")
+    private String location;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

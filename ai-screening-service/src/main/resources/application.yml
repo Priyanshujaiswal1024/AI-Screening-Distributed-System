@@ -57,11 +57,11 @@ spring:
 
     openai:
       base-url: https://api.groq.com/openai
-      api-key: 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
+      api-key: ${GROQ_API_KEY:your_groq_api_key}
       chat:
         enabled: true
         options:
-          model: llama-3.1-8b-instant
+          model: openai/gpt-oss-20b
       embedding:
         enabled: false # Do not use OpenAI for embeddings (keeps it free via Ollama)
 
@@ -127,5 +127,5 @@ aws:
   s3:
     bucket: talent-intelligence-resumes-2026
     region: eu-north-1
-    access-key: AKIARWG53UC5HMAGAQ5V
-    secret-key: 5JNucOx+8zL8CMXVuIPgc4fNW3CM5ARduiCHdKS8
+    access-key: ${AWS_ACCESS_KEY_ID:your_aws_access_key}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:your_aws_secret_key}

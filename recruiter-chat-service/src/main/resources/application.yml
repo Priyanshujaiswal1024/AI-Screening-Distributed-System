@@ -27,11 +27,11 @@ spring:
         model: nomic-embed-text
     openai:
       base-url: https://api.groq.com/openai
-      api-key: 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
+      api-key: ${GROQ_API_KEY:your_groq_api_key}
       chat:
         enabled: true
         options:
-          model: llama-3.3-70b-versatile
+          model: openai/gpt-oss-20b
       embedding:
         enabled: false # Do not use OpenAI for embeddings (keeps it free via Ollama)
     vectorstore:

@@ -14,6 +14,7 @@ import { interviewApi } from '../../interviews/api/interviewApi'
 import { useAuthStore } from '../../../shared/store/authStore'
 import { useRobotStore } from '../../../shared/store/robotStore'
 import FuturisticRobot3D from '../../../shared/components/robot/FuturisticRobot3D'
+import Pagination from '../../../shared/components/Pagination'
 
 /* ── Radial score ring ── */
 function ScoreRing({ score, size = 56 }) {
@@ -70,6 +71,91 @@ function RankBadge({ rank }) {
     if (rank === 2) return <Medal size={16} style={{ color: '#92400e' }} />
     return <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)' }}>#{rank + 1}</span>
 }
+/* ── Formatter for AI Summary ── */
+const renderSummary = (text) => {
+    if (!text) return null;
+    if (!text.includes('###')) return <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.65 }}>{text}</div>;
+
+    const parts = text.split('###').filter(p => p.trim() !== '');
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {parts.map((part, index) => {
+                const match = part.match(/^\s*(.*?)(?:\(Confidence:\s*(\d+)%\))?\s*\n([\s\S]*)/i);
+                let title = part.trim();
+                let conf = null;
+                let content = '';
+
+                if (match) {
+                    title = match[1].trim();
+                    conf = match[2];
+                    content = match[3]?.trim() || '';
+                } else {
+                    const fallback = part.match(/^\s*([A-Z\s&]+)\s*([\s\S]*)/);
+                    if (fallback) {
+                        title = fallback[1].trim();
+                        content = fallback[2]?.trim() || '';
+                    }
+                }
+
+                if (!content && !conf) {
+                    content = title;
+                    title = 'Summary';
+                }
+
+                return (
+                    <div key={index} style={{
+                        background: 'var(--bg-tertiary)',
+                        borderRadius: 8,
+                        border: '1px solid var(--border)',
+                        padding: '11px 13px',
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: 5,
+                        }}>
+                            <div style={{
+                                fontWeight: 700,
+                                fontSize: 11,
+                                color: 'var(--brand)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.04em',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                            }}>
+                                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--brand)' }}></span>
+                                {title}
+                            </div>
+                            {conf && parseInt(conf) > 0 && (
+                                <span style={{
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    padding: '2px 7px',
+                                    borderRadius: 99,
+                                    background: parseInt(conf) >= 85 ? 'rgba(16,185,129,0.12)' : 'rgba(6,182,212,0.12)',
+                                    color: parseInt(conf) >= 85 ? '#10b981' : 'var(--brand)',
+                                    border: `1px solid ${parseInt(conf) >= 85 ? 'rgba(16,185,129,0.25)' : 'rgba(6,182,212,0.25)'}`,
+                                }}>
+                                    {conf}% Conf.
+                                </span>
+                            )}
+                        </div>
+                        <div style={{
+                            fontSize: 12,
+                            color: 'var(--text-secondary)',
+                            lineHeight: 1.6,
+                            whiteSpace: 'pre-line',
+                        }}>
+                            {content}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
 
 /* ── Candidate drawer (Centered Modal Card) ── */
 function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
@@ -216,13 +302,7 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                                 {candidate.structuredSummary && (
                                     <div>
                                         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>AI Summary</div>
-                                        <p style={{
-                                            fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65,
-                                            background: 'var(--bg-tertiary)', padding: '12px 14px',
-                                            borderRadius: 10, border: '1px solid var(--border)',
-                                        }}>
-                                            {candidate.structuredSummary}
-                                        </p>
+                                        {renderSummary(candidate.structuredSummary)}
                                     </div>
                                 )}
                                 {strengths.length > 0 && (
@@ -987,6 +1067,8 @@ export default function RankingPage() {
     const [selectedJobId, setSelectedJobId] = useState(paramJobId || '')
     const [selectedCandidate, setSelected]  = useState(null)
     const [showInviteModal, setShowInviteModal] = useState(false)
+    const [page, setPage]                       = useState(1)
+    const [pageSize, setPageSize]               = useState(10)
 
     const { data: jobsRes } = useQuery({
         queryKey: ['jobs', recruiterId],
@@ -998,6 +1080,10 @@ export default function RankingPage() {
     useEffect(() => {
         if (!selectedJobId && jobs.length > 0) setSelectedJobId(jobs[0].id)
     }, [jobs])
+
+    useEffect(() => {
+        setPage(1)
+    }, [selectedJobId])
 
     const { data: rankRes, isLoading, refetch } = useQuery({
         queryKey: ['ranking', selectedJobId],
@@ -1014,10 +1100,31 @@ export default function RankingPage() {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Rankings</h1>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3 }}>
-                        {ranked.length} candidate{ranked.length !== 1 ? 's' : ''} ranked for{' '}
-                        <strong style={{ color: 'var(--text-primary)' }}>{selectedJob?.title || '...'}</strong>
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                            {ranked.length} candidate{ranked.length !== 1 ? 's' : ''} ranked for{' '}
+                            <strong style={{ color: 'var(--text-primary)' }}>{selectedJob?.title || '...'}</strong>
+                        </span>
+                        {selectedJob?.employmentType && (
+                            <span style={{
+                                fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 700,
+                                background: selectedJob.employmentType.toLowerCase().includes('intern') ? 'rgba(245,158,11,0.1)' : 'rgba(139,92,246,0.1)',
+                                color: selectedJob.employmentType.toLowerCase().includes('intern') ? '#f59e0b' : '#8b5cf6',
+                                border: selectedJob.employmentType.toLowerCase().includes('intern') ? '1px solid rgba(245,158,11,0.25)' : '1px solid rgba(139,92,246,0.25)',
+                            }}>
+                                {selectedJob.employmentType}
+                            </span>
+                        )}
+                        {selectedJob?.workMode && (
+                            <span style={{
+                                fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                                background: 'rgba(6,182,212,0.08)', color: '#06b6d4',
+                                border: '1px solid rgba(6,182,212,0.2)',
+                            }}>
+                                {selectedJob.workMode}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
                     {ranked.length > 0 && (
@@ -1161,7 +1268,8 @@ export default function RankingPage() {
                         ))}
                     </div>
 
-                    {ranked.map((c, idx) => {
+                    {ranked.slice((page - 1) * pageSize, page * pageSize).map((c, idx) => {
+                        const globalIdx = (page - 1) * pageSize + idx
                         const score     = c.matchScore || 0
                         const isSelected = selectedCandidate?.resumeId === c.resumeId
                         const hue       = c.candidateName?.charCodeAt(0) * 137.5 % 360 || 200
@@ -1172,7 +1280,7 @@ export default function RankingPage() {
                                 style={{
                                     display: 'grid', gridTemplateColumns: '48px 2fr 2fr 160px 80px',
                                     gap: 12, padding: '12px 16px',
-                                    borderBottom: idx < ranked.length - 1 ? '1px solid var(--border)' : 'none',
+                                    borderBottom: idx < pageSize - 1 ? '1px solid var(--border)' : 'none',
                                     alignItems: 'center', cursor: 'pointer',
                                     background: isSelected ? 'rgba(6,182,212,0.04)' : 'transparent',
                                     transition: 'background 0.15s',
@@ -1182,7 +1290,7 @@ export default function RankingPage() {
                                 onMouseLeave={e => !isSelected && (e.currentTarget.style.background = 'transparent')}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <RankBadge rank={idx} />
+                                    <RankBadge rank={globalIdx} />
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <div style={{
@@ -1213,6 +1321,17 @@ export default function RankingPage() {
                         )
                     })}
                 </div>
+            )}
+
+            {ranked.length > 0 && (
+                <Pagination
+                    currentPage={page}
+                    totalItems={ranked.length}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={setPageSize}
+                    itemName="ranked candidates"
+                />
             )}
 
             {/* Candidate drawer + overlay */}

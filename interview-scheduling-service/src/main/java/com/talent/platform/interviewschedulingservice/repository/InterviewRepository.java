@@ -20,4 +20,6 @@ public interface InterviewRepository extends JpaRepository<Interview, UUID> {
 
     // Used by auto-cancel scheduler: find PENDING invites older than cutoff time
     List<Interview> findByStatusAndCreatedAtBefore(Interview.InterviewStatus status, java.time.LocalDateTime cutoff);
+
+    List<Interview> findByStatusAndInterviewDateBefore(Interview.InterviewStatus status, java.time.LocalDate date);
 }

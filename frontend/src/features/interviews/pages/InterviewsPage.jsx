@@ -1,12 +1,21 @@
 import React, { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calendar, Clock, Video, MapPin, Search, Filter, RefreshCw, Mail, XCircle, CheckCircle2, AlertCircle, Briefcase } from 'lucide-react'
+import { Calendar, Clock, Video, MapPin, Search, Filter, RefreshCw, Mail, XCircle, CheckCircle2, AlertCircle, Briefcase, Trash2, Archive } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { interviewApi } from '../api/interviewApi'
+import Pagination from '../../../shared/components/Pagination'
 
 export default function InterviewsPage() {
     const [filter, setFilter] = useState('ALL')
     const [search, setSearch] = useState('')
+    const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(10)
+    const qc = useQueryClient()
+
+    React.useEffect(() => {
+        setPage(1)
+    }, [filter, search])
 
     const { data: interviews = [], isLoading, refetch } = useQuery({
         queryKey: ['myInterviews'],
@@ -16,7 +25,38 @@ export default function InterviewsPage() {
         }
     })
 
-    const filtered = interviews.filter(inv => {
+    const cancelMutation = useMutation({
+        mutationFn: (id) => interviewApi.cancel(id),
+        onSuccess: () => {
+            qc.invalidateQueries(['myInterviews'])
+            toast.success('Interview cancelled successfully 🚫')
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || 'Failed to cancel interview')
+        }
+    })
+
+    const deletePermanentMutation = useMutation({
+        mutationFn: (id) => interviewApi.deletePermanent(id),
+        onSuccess: () => {
+            qc.invalidateQueries(['myInterviews'])
+            toast.success('Interview record removed 🗑️')
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || 'Failed to remove interview')
+        }
+    })
+
+    const today = new Date().toISOString().split('T')[0]
+    const processedInterviews = interviews.map(inv => {
+        const isPast = inv.interviewDate && inv.interviewDate < today
+        if (inv.status === 'PENDING' && isPast) {
+            return { ...inv, status: 'NO_RESPONSE' }
+        }
+        return inv
+    })
+
+    const filtered = processedInterviews.filter(inv => {
         const matchStatus = filter === 'ALL' || inv.status === filter
         const matchSearch = (inv.candidateName || '').toLowerCase().includes(search.toLowerCase()) ||
                             (inv.jobTitle || '').toLowerCase().includes(search.toLowerCase())
@@ -24,10 +64,10 @@ export default function InterviewsPage() {
     })
 
     const stats = {
-        total: interviews.length,
-        pending: interviews.filter(i => i.status === 'PENDING').length,
-        confirmed: interviews.filter(i => i.status === 'CONFIRMED').length,
-        no_response: interviews.filter(i => i.status === 'NO_RESPONSE').length,
+        total: processedInterviews.length,
+        pending: processedInterviews.filter(i => i.status === 'PENDING').length,
+        confirmed: processedInterviews.filter(i => i.status === 'CONFIRMED').length,
+        no_response: processedInterviews.filter(i => i.status === 'NO_RESPONSE').length,
     }
 
     const getStatusStyle = (status) => {
@@ -113,82 +153,136 @@ export default function InterviewsPage() {
                     <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Try changing your filters or search query.</p>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <AnimatePresence>
-                        {filtered.map(inv => {
-                            const style = getStatusStyle(inv.status)
-                            const hue = inv.candidateName?.charCodeAt(0) * 137.5 % 360 || 200
+                <div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <AnimatePresence>
+                            {filtered.slice((page - 1) * pageSize, page * pageSize).map(inv => {
+                                const style = getStatusStyle(inv.status)
+                                const hue = inv.candidateName?.charCodeAt(0) * 137.5 % 360 || 200
 
-                            return (
-                                <motion.div
-                                    key={inv.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    style={{
-                                        background: 'var(--bg-primary)', padding: '16px 20px', borderRadius: 12,
-                                        border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 20,
-                                        boxShadow: 'var(--shadow-sm)'
-                                    }}
-                                >
-                                    {/* Avatar */}
-                                    <div style={{
-                                        width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                                        background: `linear-gradient(135deg, hsl(${hue},60%,55%), hsl(${(hue+40)%360},70%,45%))`,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: 16, fontWeight: 800, color: 'white'
-                                    }}>
-                                        {(inv.candidateName || '?').slice(0, 2).toUpperCase()}
-                                    </div>
+                                return (
+                                    <motion.div
+                                        key={inv.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        style={{
+                                            background: 'var(--bg-primary)', padding: '16px 20px', borderRadius: 12,
+                                            border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 20,
+                                            boxShadow: 'var(--shadow-sm)'
+                                        }}
+                                    >
+                                        {/* Avatar */}
+                                        <div style={{
+                                            width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                                            background: `linear-gradient(135deg, hsl(${hue},60%,55%), hsl(${(hue+40)%360},70%,45%))`,
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 16, fontWeight: 800, color: 'white'
+                                        }}>
+                                            {(inv.candidateName || '?').slice(0, 2).toUpperCase()}
+                                        </div>
 
-                                    {/* Info */}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-                                            <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>
-                                                {inv.candidateName}
-                                            </span>
-                                            <div style={{
-                                                display: 'flex', alignItems: 'center', gap: 6,
-                                                padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
-                                                background: style.bg, color: style.color
-                                            }}>
-                                                {style.icon} {style.label}
+                                        {/* Info */}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+                                                <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>
+                                                    {inv.candidateName}
+                                                </span>
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: 6,
+                                                    padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                                                    background: style.bg, color: style.color
+                                                }}>
+                                                    {style.icon} {style.label}
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, color: 'var(--text-muted)' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Briefcase size={13}/> {inv.jobTitle}</span>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Mail size={13}/> {inv.candidateEmail}</span>
                                             </div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 12, color: 'var(--text-muted)' }}>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Briefcase size={13}/> {inv.jobTitle}</span>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Mail size={13}/> {inv.candidateEmail}</span>
-                                        </div>
-                                    </div>
 
-                                    {/* Schedule */}
-                                    <div style={{ textAlign: 'right', minWidth: 160 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>
-                                            {inv.interviewDate}
+                                        {/* Schedule */}
+                                        <div style={{ textAlign: 'right', minWidth: 160 }}>
+                                            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 2 }}>
+                                                {inv.interviewDate}
+                                            </div>
+                                            <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
+                                                <Clock size={12}/> {inv.interviewTime}
+                                                <span style={{ margin: '0 4px' }}>•</span>
+                                                {inv.interviewMode === 'ONLINE' ? <Video size={12}/> : <MapPin size={12}/>}
+                                                {inv.interviewMode}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                                            <Clock size={12}/> {inv.interviewTime}
-                                            <span style={{ margin: '0 4px' }}>•</span>
-                                            {inv.interviewMode === 'ONLINE' ? <Video size={12}/> : <MapPin size={12}/>}
-                                            {inv.interviewMode}
-                                        </div>
-                                    </div>
 
-                                    {/* Actions placeholder */}
-                                    <div style={{ display: 'flex', gap: 8, paddingLeft: 12, borderLeft: '1px solid var(--border)' }}>
-                                        {inv.status === 'NO_RESPONSE' && (
-                                            <button className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>
-                                                Resend
+                                        {/* Actions */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 12, borderLeft: '1px solid var(--border)' }}>
+                                            {inv.status === 'NO_RESPONSE' && (
+                                                <button
+                                                    onClick={() => {
+                                                        toast.success(`Invite resent to ${inv.candidateEmail || 'candidate'} 📧`)
+                                                    }}
+                                                    className="btn-secondary"
+                                                    style={{ padding: '6px 12px', fontSize: 12 }}
+                                                >
+                                                    Resend
+                                                </button>
+                                            )}
+                                            {inv.status !== 'CANCELLED' && (
+                                                <button
+                                                    onClick={() => {
+                                                        if (window.confirm(`Are you sure you want to cancel the interview for ${inv.candidateName || 'this candidate'}?`)) {
+                                                            cancelMutation.mutate(inv.id)
+                                                        }
+                                                    }}
+                                                    disabled={cancelMutation.isPending}
+                                                    className="btn-ghost"
+                                                    style={{ padding: '6px 12px', fontSize: 12, color: 'var(--rose)' }}
+                                                >
+                                                    {cancelMutation.isPending ? 'Cancelling...' : 'Cancel'}
+                                                </button>
+                                            )}
+                                            {/* Remove / Archive button */}
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm(`Remove interview record for ${inv.candidateName || 'this candidate'} permanently?`)) {
+                                                        deletePermanentMutation.mutate(inv.id)
+                                                    }
+                                                }}
+                                                disabled={deletePermanentMutation.isPending}
+                                                className="btn-ghost"
+                                                style={{
+                                                    padding: '6px 8px',
+                                                    fontSize: 12,
+                                                    color: 'var(--text-muted)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 4
+                                                }}
+                                                title="Delete / Archive record"
+                                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--rose)' }}
+                                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)' }}
+                                            >
+                                                <Trash2 size={14} />
+                                                {inv.status === 'CANCELLED' ? 'Remove' : ''}
                                             </button>
-                                        )}
-                                        <button className="btn-ghost" style={{ padding: '6px 12px', fontSize: 12, color: 'var(--rose)' }}>
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )
-                        })}
-                    </AnimatePresence>
+                                        </div>
+                                    </motion.div>
+                                )
+                            })}
+                        </AnimatePresence>
+                    </div>
+
+                    {filtered.length > 0 && (
+                        <Pagination
+                            currentPage={page}
+                            totalItems={filtered.length}
+                            pageSize={pageSize}
+                            onPageChange={setPage}
+                            onPageSizeChange={setPageSize}
+                            itemName="interviews"
+                        />
+                    )}
                 </div>
             )}
         </div>

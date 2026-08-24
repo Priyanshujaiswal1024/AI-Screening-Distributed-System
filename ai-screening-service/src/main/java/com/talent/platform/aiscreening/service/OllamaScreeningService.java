@@ -154,7 +154,7 @@ public class OllamaScreeningService {
                         "- confidenceScore must be a decimal double (e.g. 0.8)\n" +
                         "- Return ONLY the JSON object, no markdown, no extra text\n" +
                         "- Scan the ENTIRE resume text (all sections) to extract details\n" +
-                        "- Never leave any details field empty — if not mentioned write 'not mentioned'\n" +
+                        "- Never leave any details field empty — if not mentioned write 'not mentioned' and set its confidence to 0.0\n" +
                         "- Support skill alias normalization (e.g., 'ReactJS' matches 'React', 'NodeJS' matches 'Node.js', 'TailwindCSS' matches 'Tailwind CSS')";
 
         try {

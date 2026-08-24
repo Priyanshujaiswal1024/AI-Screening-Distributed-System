@@ -23,4 +23,10 @@ public class CreateJobRequest {
 
     @Min(0) @Max(30)
     private int minExperienceYears;
+
+    private String employmentType;
+
+    private String workMode;
+
+    private String location;
 }

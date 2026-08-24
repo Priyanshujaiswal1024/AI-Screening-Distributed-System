@@ -9,9 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Auto-Cancel Scheduler
@@ -49,17 +47,24 @@ public class InterviewAutoExpireScheduler {
     public void checkPendingInterviews() {
         LocalDateTime now = LocalDateTime.now();
 
-        // ── 1. Auto-expire: PENDING > 5 days → NO_RESPONSE ───────────────────
+        // ── 1. Auto-expire: PENDING > 5 days OR past interview date → NO_RESPONSE ──
         LocalDateTime expiryCutoff = now.minusDays(AUTO_EXPIRE_DAYS);
-        List<Interview> expired = interviewRepository
+        java.time.LocalDate today = java.time.LocalDate.now();
+        List<Interview> expiredByCreated = interviewRepository
                 .findByStatusAndCreatedAtBefore(Interview.InterviewStatus.PENDING, expiryCutoff);
+        List<Interview> expiredByDate = interviewRepository
+                .findByStatusAndInterviewDateBefore(Interview.InterviewStatus.PENDING, today);
 
-        for (Interview interview : expired) {
+        Set<Interview> allExpired = new HashSet<>();
+        allExpired.addAll(expiredByCreated);
+        allExpired.addAll(expiredByDate);
+
+        for (Interview interview : allExpired) {
             try {
                 interview.setStatus(Interview.InterviewStatus.NO_RESPONSE);
                 interviewRepository.save(interview);
 
-                log.info("[AutoExpire] Interview id={} candidate={} marked NO_RESPONSE after {} days",
+                log.info("[AutoExpire] Interview id={} candidate={} marked NO_RESPONSE (past date or > {} days)",
                         interview.getId(), interview.getCandidateEmail(), AUTO_EXPIRE_DAYS);
 
                 // Notify recruiter via Kafka → notification-service sends email
@@ -89,8 +94,8 @@ public class InterviewAutoExpireScheduler {
             }
         }
 
-        if (!expired.isEmpty() || !needReminder.isEmpty()) {
-            log.info("[InterviewScheduler] Cycle done: {} expired, {} reminders sent", expired.size(), needReminder.size());
+        if (!allExpired.isEmpty() || !needReminder.isEmpty()) {
+            log.info("[InterviewScheduler] Cycle done: {} expired, {} reminders sent", allExpired.size(), needReminder.size());
         }
     }
 
@@ -108,6 +113,8 @@ public class InterviewAutoExpireScheduler {
         event.put("daysWaited",      AUTO_EXPIRE_DAYS);
         kafkaTemplate.send("interview-status-updated", interview.getId().toString(), event);
     }
+
+    
 
     // ── Kafka: Candidate ko reminder bhejo ───────────────────────────────────
     private void publishReminderEvent(Interview interview) {

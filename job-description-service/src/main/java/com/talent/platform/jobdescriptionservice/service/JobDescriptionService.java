@@ -43,6 +43,9 @@ public class JobDescriptionService {
                 .rawText(request.getRawText())
                 .keySkills(request.getKeySkills())
                 .minExperienceYears(request.getMinExperienceYears())
+                .employmentType(request.getEmploymentType())
+                .workMode(request.getWorkMode())
+                .location(request.getLocation())
                 .build();
 
         JobDescription saved = repository.save(jd);
@@ -51,10 +54,12 @@ public class JobDescriptionService {
         // FIX W1: embed JD text and store in pgvector for semantic search
         try {
             Map<String, Object> metadata = new HashMap<>();
-            metadata.put("jobId",      saved.getId().toString());
-            metadata.put("recruiterId", saved.getRecruiterId().toString());
-            metadata.put("title",      saved.getTitle());
-            metadata.put("source",     "job-description");
+            metadata.put("jobId",          saved.getId().toString());
+            metadata.put("recruiterId",     saved.getRecruiterId().toString());
+            metadata.put("title",          saved.getTitle());
+            metadata.put("employmentType", saved.getEmploymentType() != null ? saved.getEmploymentType() : "");
+            metadata.put("workMode",       saved.getWorkMode() != null ? saved.getWorkMode() : "");
+            metadata.put("source",         "job-description");
 
             vectorStore.add(List.of(new Document(saved.getRawText(), metadata)));
             log.info("JD embedded and stored in pgvector: jobId={}", saved.getId());
@@ -89,6 +94,9 @@ public class JobDescriptionService {
         existing.setRawText(request.getRawText());
         existing.setKeySkills(request.getKeySkills());
         existing.setMinExperienceYears(request.getMinExperienceYears());
+        existing.setEmploymentType(request.getEmploymentType());
+        existing.setWorkMode(request.getWorkMode());
+        existing.setLocation(request.getLocation());
         JobDescription updated = repository.save(existing);
         publishEvent("JOB_UPDATED", updated.getId(), updated.getTitle(), updated.getRecruiterId());
         return updated;
@@ -96,8 +104,10 @@ public class JobDescriptionService {
 
     @Transactional
     public void deleteJob(UUID id) {
-        repository.deleteById(id);
-        publishEvent("JOB_DELETED", id, "", null);
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            publishEvent("JOB_DELETED", id, "", null);
+        }
     }
 
     private void publishEvent(String type, UUID jobId, String title, UUID recruiterId) {

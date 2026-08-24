@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Send, RefreshCw, ChevronDown, Bot, Trash2, Sparkles, User, Volume2, VolumeX } from 'lucide-react'
+import { Send, RefreshCw, ChevronDown, Bot, Trash2, Sparkles, User, Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { speakText, stopSpeaking } from '../../../shared/utils/speech'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -173,12 +173,12 @@ export default function ChatPage() {
         }
     }, [selectedResumeId, selectedJobId, resumes, jobs, activeReport])
 
-    const send = async (e) => {
+    const send = async (e, customText) => {
         e?.preventDefault()
-        const text = input.trim()
+        const text = (customText !== undefined ? customText : input).trim()
         if (!text || loading) return
 
-        setInput('')
+        if (customText === undefined) setInput('')
         setMessages(prev => [...prev, { role: 'user', text, ts: new Date().toISOString() }])
         setLoading(true)
         setMood('thinking')
@@ -480,6 +480,29 @@ export default function ChatPage() {
                             {/* User label */}
                             {msg.role === 'user' && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => send(null, msg.text)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            padding: '2px 6px',
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            color: 'var(--text-muted)',
+                                            borderRadius: 6,
+                                            transition: 'all 0.15s ease',
+                                            fontSize: 10,
+                                        }}
+                                        title="Send this prompt again"
+                                        onMouseEnter={e => { e.currentTarget.style.color = '#06b6d4'; e.currentTarget.style.background = 'rgba(6,182,212,0.1)' }}
+                                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'none' }}
+                                    >
+                                        <RotateCcw size={11} />
+                                        <span>Resend</span>
+                                    </button>
                                     <span style={{ fontSize: 10, color: 'var(--text-faint)', fontWeight: 600 }}>You</span>
                                     <div style={{
                                         width: 22, height: 22, borderRadius: '50%',
@@ -491,7 +514,25 @@ export default function ChatPage() {
                                 </div>
                             )}
 
-                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { display: 'flex', flexDirection: 'column', gap: '0.5rem' } : {}}>
+                            <div 
+                                className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} 
+                                style={
+                                    msg.role === 'ai' 
+                                        ? msg.text?.includes('Rate Limit Reached')
+                                            ? { 
+                                                display: 'flex', 
+                                                flexDirection: 'column', 
+                                                gap: '0.5rem',
+                                                background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(244,63,94,0.05))',
+                                                border: '1px solid rgba(245,158,11,0.3)',
+                                                borderRadius: 12,
+                                                padding: '12px 16px',
+                                                boxShadow: '0 4px 12px rgba(245,158,11,0.08)'
+                                              }
+                                            : { display: 'flex', flexDirection: 'column', gap: '0.5rem' } 
+                                        : {}
+                                }
+                            >
                                 {msg.role === 'ai' ? (
                                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                                         p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
@@ -500,7 +541,7 @@ export default function ChatPage() {
                                         li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
                                         h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
                                         h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
-                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                        h3: ({node, ...props}) => <h3 style={{ margin: '4px 0', fontSize: '1.05em', fontWeight: 'bold', color: msg.text?.includes('Rate Limit') ? '#f59e0b' : 'inherit' }} {...props} />
                                     }}>
                                         {msg.text}
                                     </ReactMarkdown>

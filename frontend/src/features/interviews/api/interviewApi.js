@@ -16,4 +16,12 @@ export const interviewApi = {
     // Get interviews for a specific job
     getByJob: (jobId) =>
         api.get(`/api/v1/interviews/job/${jobId}`),
+
+    // Cancel an interview
+    cancel: (id) =>
+        api.delete(`/api/v1/interviews/${id}`),
+
+    // Permanently remove / delete an interview
+    deletePermanent: (id) =>
+        api.delete(`/api/v1/interviews/${id}/permanent`),
 }

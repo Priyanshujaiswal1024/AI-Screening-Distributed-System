@@ -210,7 +210,14 @@ public class ChatService {
                 };
             } catch (Exception e) {
                 log.error("[ChatService] Pipeline error: {}", e.getMessage(), e);
-                reply = "I encountered an error. Please try again.";
+                String errMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+                if (errMsg.contains("429") || errMsg.contains("rate limit") || errMsg.contains("rate_limit_exceeded") || errMsg.contains("quota") || errMsg.contains("tokens per minute")) {
+                    reply = "### ⚠️ Groq AI Rate Limit Reached\n\n"
+                          + "The cloud AI provider (**Groq**) has temporarily reached its per-minute token threshold.\n\n"
+                          + "⏱️ **Please wait 15–30 seconds** and ask your question again. Your conversation history is preserved!";
+                } else {
+                    reply = "⚠️ I encountered a temporary processing issue. Please try your question again in a moment.";
+                }
             }
 
             log.info("[ChatService] Answer preview  : '{}'",

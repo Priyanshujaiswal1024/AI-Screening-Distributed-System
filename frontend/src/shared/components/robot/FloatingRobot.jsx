@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Send, Trash2, Minimize2, Volume2, VolumeX } from 'lucide-react'
+import { X, Send, Trash2, Minimize2, Volume2, VolumeX, AlertCircle, RotateCcw } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { speakText, stopSpeaking } from '../../utils/speech'
@@ -85,12 +85,12 @@ export default function FloatingRobot() {
         if (isOpen) inputRef.current?.focus()
     }, [isOpen])
 
-    const send = async (e) => {
-        e.preventDefault()
-        const text = input.trim()
+    const send = async (e, customText) => {
+        if (e) e.preventDefault()
+        const text = (customText !== undefined ? customText : input).trim()
         if (!text || loading) return
 
-        setInput('')
+        if (customText === undefined) setInput('')
         addMessage({ role: 'user', text })
         setLoading(true)
         setMood('thinking')
@@ -230,26 +230,89 @@ export default function FloatingRobot() {
 
                             {/* Messages */}
                             <div style={{ flex:1, overflowY:'auto', padding:'16px 14px', display:'flex', flexDirection:'column', gap:10 }}>
-                                {messages.map((msg, i) => (
-                                    <div key={i} className={cn('flex flex-col', msg.role === 'user' ? 'items-end' : 'items-start')}>
-                                        <div className="flex items-end gap-1.5" style={{ flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', maxWidth: '85%' }}>
-                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { display: 'flex', flexDirection: 'column', gap: '0.5rem' } : {}}>
-                                                {msg.role === 'ai' ? (
-                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-                                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
-                                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
-                                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
-                                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
-                                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
-                                                    }}>
-                                                        {msg.text}
-                                                    </ReactMarkdown>
-                                                ) : (
-                                                    msg.text
-                                                )}
-                                            </div>
+                                {messages.map((msg, i) => {
+                                    const isRateLimit = msg.role === 'ai' && (
+                                        msg.text.includes('Rate Limit') ||
+                                        msg.text.includes('limit reached') ||
+                                        msg.text.includes('rate_limit_exceeded') ||
+                                        msg.text.includes('I encountered an error')
+                                    )
+
+                                    return (
+                                        <div key={i} className={cn('flex flex-col', msg.role === 'user' ? 'items-end' : 'items-start')}>
+                                            <div className="flex items-end gap-1.5" style={{ flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', maxWidth: '85%' }}>
+                                                <div
+                                                    className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}
+                                                    style={
+                                                        isRateLimit ? {
+                                                            background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08))',
+                                                            border: '1px solid rgba(245,158,11,0.3)',
+                                                            borderRadius: 14,
+                                                            padding: '10px 14px',
+                                                            color: '#f59e0b',
+                                                            boxShadow: '0 4px 16px rgba(245,158,11,0.15)',
+                                                            display: 'flex', flexDirection: 'column', gap: '0.4rem'
+                                                        } : msg.role === 'ai' ? {
+                                                            display: 'flex', flexDirection: 'column', gap: '0.5rem'
+                                                        } : {
+                                                            display: 'inline-block',
+                                                            width: 'auto',
+                                                            minWidth: 'fit-content',
+                                                            whiteSpace: 'pre-wrap',
+                                                            wordBreak: 'normal'
+                                                        }
+                                                    }
+                                                >
+                                                    {isRateLimit ? (
+                                                        <div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, color: '#fbbf24', marginBottom: 4 }}>
+                                                                <AlertCircle size={14} />
+                                                                <span>Groq AI Limit Notice</span>
+                                                            </div>
+                                                            <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.45 }}>
+                                                                AI limit reached. Please wait <strong>15–30 seconds</strong> and ask again.
+                                                            </p>
+                                                        </div>
+                                                    ) : msg.role === 'ai' ? (
+                                                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                            p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                            ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                            ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                            li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                            h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                            h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                            h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                        }}>
+                                                            {msg.text}
+                                                        </ReactMarkdown>
+                                                    ) : (
+                                                        msg.text
+                                                    )}
+                                                </div>
+                                            {msg.role === 'user' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => send(null, msg.text)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        padding: 4,
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: 'var(--text-muted)',
+                                                        borderRadius: '50%',
+                                                        transition: 'all 0.15s ease',
+                                                        flexShrink: 0,
+                                                    }}
+                                                    title="Send this prompt again"
+                                                    onMouseEnter={e => e.currentTarget.style.color = '#06b6d4'}
+                                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                                                >
+                                                    <RotateCcw size={12} />
+                                                </button>
+                                            )}
                                             {msg.role === 'ai' && (
                                                 <button
                                                     type="button"
@@ -278,10 +341,11 @@ export default function FloatingRobot() {
                                             )}
                                         </div>
                                         <span style={{ fontSize:10, color:'var(--text-muted)', marginTop:3 }}>
-                      {msg.timestamp ? format(new Date(msg.timestamp), 'HH:mm') : ''}
-                    </span>
+                                            {msg.timestamp ? format(new Date(msg.timestamp), 'HH:mm') : ''}
+                                        </span>
                                     </div>
-                                ))}
+                                )
+                            })}
                                 {loading && (
                                     <div className="flex items-start">
                                         <TypingDots />

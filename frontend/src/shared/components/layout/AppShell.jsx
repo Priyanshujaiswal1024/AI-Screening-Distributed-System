@@ -280,11 +280,11 @@ export default function AppShell() {
             {/* Main content */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
-                {/* Mobile topbar */}
+                {/* Mobile topbar (strictly shown only on mobile screens <= 768px) */}
                 <div
-                    className="md:hidden"
+                    className="mobile-topbar-header"
                     style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        alignItems: 'center', justifyContent: 'space-between',
                         padding: '12px 16px',
                         borderBottom: '1px solid var(--border)',
                         background: 'var(--bg-primary)',

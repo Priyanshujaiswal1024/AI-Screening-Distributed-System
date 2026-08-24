@@ -8,7 +8,7 @@ import com.talent.platform.candidaterankingservice.model.ScreeningReport;
 import com.talent.platform.candidaterankingservice.repository.ScreeningReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.embedding.EmbeddingModel;
+// EmbeddingModel removed — cosine similarity no longer used in RankingService
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class RankingService {
 
     private final ScreeningReportRepository repository;
     private final StringRedisTemplate redisTemplate;
-    private final EmbeddingModel embeddingModel;
+    // EmbeddingModel field removed — was only used for cosine similarity confidence estimation
     private final ResumeServiceClient resumeServiceClient;
     private final CandidateInfoClient candidateInfoClient;
     private final JobServiceClient jobServiceClient;
@@ -39,7 +39,7 @@ public class RankingService {
     private final SkillNormalizerService skillNormalizerService;
 
     private static final String RANKING_KEY = "jd:ranking:";
-    private static final double SKILL_MATCH_THRESHOLD = 0.55;
+    // SKILL_MATCH_THRESHOLD removed — was declared but never referenced anywhere
 
     public ScreeningReport calculateAndStoreScore(UUID jobId, UUID resumeId) {
         log.info("[RankingService] Scoring resume={} for job={}", resumeId, jobId);
@@ -213,41 +213,14 @@ public class RankingService {
                 
                 // Construct a beautiful complete analysis text for structuredSummary
                 StringBuilder summaryBuilder = new StringBuilder();
-                if (aiResult.getOverallProfile() != null && aiResult.getOverallProfile().getDetails() != null) {
-                    summaryBuilder.append("### OVERALL CANDIDATE PROFILE (Confidence: ")
-                            .append(Math.round(aiResult.getOverallProfile().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getOverallProfile().getDetails()).append("\n\n");
-                }
-                if (aiResult.getEducation() != null && aiResult.getEducation().getDetails() != null) {
-                    summaryBuilder.append("### EDUCATION (Confidence: ")
-                            .append(Math.round(aiResult.getEducation().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getEducation().getDetails()).append("\n\n");
-                }
-                if (aiResult.getExperience() != null && aiResult.getExperience().getDetails() != null) {
-                    summaryBuilder.append("### WORK EXPERIENCE & INTERNSHIPS (Confidence: ")
-                            .append(Math.round(aiResult.getExperience().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getExperience().getDetails()).append("\n\n");
-                }
-                if (aiResult.getProjects() != null && aiResult.getProjects().getDetails() != null) {
-                    summaryBuilder.append("### PROJECTS (Confidence: ")
-                            .append(Math.round(aiResult.getProjects().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getProjects().getDetails()).append("\n\n");
-                }
-                if (aiResult.getAchievements() != null && aiResult.getAchievements().getDetails() != null) {
-                    summaryBuilder.append("### ACHIEVEMENTS & CERTIFICATIONS (Confidence: ")
-                            .append(Math.round(aiResult.getAchievements().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getAchievements().getDetails()).append("\n\n");
-                }
-                if (aiResult.getExtracurriculars() != null && aiResult.getExtracurriculars().getDetails() != null) {
-                    summaryBuilder.append("### EXTRACURRICULARS & POR (Confidence: ")
-                            .append(Math.round(aiResult.getExtracurriculars().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getExtracurriculars().getDetails()).append("\n\n");
-                }
-                if (aiResult.getSoftSkills() != null && aiResult.getSoftSkills().getDetails() != null) {
-                    summaryBuilder.append("### SOFT SKILLS & POR (Confidence: ")
-                            .append(Math.round(aiResult.getSoftSkills().getConfidence() * 100)).append("%)\n")
-                            .append(aiResult.getSoftSkills().getDetails()).append("\n\n");
-                }
+                appendSectionIfPresent(summaryBuilder, "OVERALL CANDIDATE PROFILE", aiResult.getOverallProfile());
+                appendSectionIfPresent(summaryBuilder, "EDUCATION", aiResult.getEducation());
+                appendSectionIfPresent(summaryBuilder, "WORK EXPERIENCE & INTERNSHIPS", aiResult.getExperience());
+                appendSectionIfPresent(summaryBuilder, "PROJECTS", aiResult.getProjects());
+                appendSectionIfPresent(summaryBuilder, "ACHIEVEMENTS & CERTIFICATIONS", aiResult.getAchievements());
+                appendSectionIfPresent(summaryBuilder, "EXTRACURRICULARS & POR", aiResult.getExtracurriculars());
+                appendSectionIfPresent(summaryBuilder, "SOFT SKILLS & POR", aiResult.getSoftSkills());
+
                 if (summaryBuilder.length() == 0) {
                     summaryBuilder.append(aiResult.getExplanation() != null ? aiResult.getExplanation() : "Screening complete.");
                 }
@@ -258,19 +231,15 @@ public class RankingService {
                 log.info("[RankingService] AI screening success. Score={}", matchScore);
             }
         } catch (Exception e) {
-            log.warn("[RankingService] AI screening service call failed: {}. Falling back to embedding-based heuristic.", e.getMessage());
+            log.warn("[RankingService] AI screening service call failed: {}. Populating report from skill-match data only.", e.getMessage());
         }
 
+        // If AI call failed — populate report from Java skill-match results.
+        // Score is always calculatedSkillScore (pure math). Confidence = 0.0
+        // because there is no qualitative AI signal to estimate it from.
         if (!aiScreeningSuccess) {
-            float[] jdEmbedding = embeddingModel.embed(jdText);
-            double totalSim = 0;
-            for (String chunk : chunks) {
-                float[] e = embeddingModel.embed(chunk);
-                totalSim += cosineSimilarity(jdEmbedding, e);
-            }
-            double avgSim   = totalSim / chunks.size();
             matchScore = calculatedSkillScore;
-            confidence = Math.min(1.0, Math.max(0.0, Math.round(avgSim * 100.0) / 100.0));
+            confidence = 0.0;
 
             List<String> matchedNames = new ArrayList<>();
             for (Map<String, Object> m : matchedList) {
@@ -284,7 +253,7 @@ public class RankingService {
             report.setStrengths("Matched skills: " + (matchedNames.isEmpty() ? "none" : String.join(", ", matchedNames)));
             report.setSkillGaps(missingNames.isEmpty() ? "None — all required skills matched" : String.join(", ", missingNames));
             report.setStructuredSummary(String.format(
-                    "Match score: %.1f%%. Matched: %s. Gaps: %s.",
+                    "Match score: %.1f%%. Matched: %s. Gaps: %s. (AI screening unavailable)",
                     matchScore,
                     matchedNames.isEmpty() ? "none" : String.join(", ", matchedNames),
                     missingNames.isEmpty() ? "none" : String.join(", ", missingNames)));
@@ -345,17 +314,21 @@ public class RankingService {
         return repository.findByResumeId(resumeId);
     }
 
-    private double cosineSimilarity(float[] a, float[] b) {
-        if (a == null || b == null || a.length != b.length) return 0;
-        double dot = 0, na = 0, nb = 0;
-        for (int i = 0; i < a.length; i++) {
-            dot += a[i] * b[i]; na += a[i]*a[i]; nb += b[i]*b[i];
+    private void appendSectionIfPresent(StringBuilder sb, String title, AIScreeningServiceClient.ScreeningResultDto.SectionDetailDto section) {
+        if (section == null || section.getDetails() == null) return;
+        String details = section.getDetails().trim();
+        if (details.isEmpty() 
+                || details.equalsIgnoreCase("not mentioned") 
+                || details.equalsIgnoreCase("n/a") 
+                || details.equalsIgnoreCase("none")
+                || details.equalsIgnoreCase("not specified")) {
+            return; // Skip section if no data was provided in resume
         }
-        return (na == 0 || nb == 0) ? 0 : dot / (Math.sqrt(na) * Math.sqrt(nb));
-    }
-
-    private String cleanStringForSearch(String s) {
-        if (s == null) return "";
-        return s.toLowerCase().replaceAll("[.\\-\\s]+", "").trim();
+        int conf = (int) Math.round(section.getConfidence() * 100);
+        sb.append("### ").append(title);
+        if (conf > 0) {
+            sb.append(" (Confidence: ").append(conf).append("%)");
+        }
+        sb.append("\n").append(details).append("\n\n");
     }
 }

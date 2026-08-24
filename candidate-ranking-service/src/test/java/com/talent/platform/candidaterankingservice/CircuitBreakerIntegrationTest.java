@@ -32,15 +32,15 @@ public class CircuitBreakerIntegrationTest {
     public void testCircuitBreakerState() {
         CircuitBreaker cb = registry.circuitBreaker("ai-screening-service");
         assertThat(cb).isNotNull();
-        
+
         // Verify circuit breaker is initialized in CLOSED state
         assertThat(cb.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
-        
-        // Make fallback calls to verify fallback is triggered
-        AIScreeningServiceClient.ScreeningRequestDto req = new AIScreeningServiceClient.ScreeningRequestDto("Java", "Java");
-        AIScreeningServiceClient.ScreeningResultDto result = client.screenResume(req);
-        
-        assertThat(result).isNotNull();
-        assertThat(result.getExplanation()).contains("Cosine-Similarity fallback");
+
+        // NOTE: FallbackFactory has been removed from AIScreeningServiceClient.
+        // RankingService.calculateAndStoreScore() handles AI failures via try-catch:
+        //   • On success  → aiScreeningSuccess=true, real confidence + 7-section summary saved
+        //   • On failure  → aiScreeningSuccess=false, confidence=0.0, summary from skill-match data
+        // The circuit breaker still protects the Feign call — it will open after
+        // repeated failures and prevent further calls for 30s (waitDurationInOpenState).
     }
 }

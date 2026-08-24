@@ -80,4 +80,13 @@ public class InterviewController {
     public ResponseEntity<InterviewResponse> cancelInterview(@PathVariable UUID id) {
         return ResponseEntity.ok(interviewService.cancelInterview(id));
     }
+
+    /**
+     * Recruiter permanently removes / deletes an interview from the system.
+     */
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deleteInterviewPermanently(@PathVariable UUID id) {
+        interviewService.deleteInterviewPermanently(id);
+        return ResponseEntity.noContent().build();
+    }
 }

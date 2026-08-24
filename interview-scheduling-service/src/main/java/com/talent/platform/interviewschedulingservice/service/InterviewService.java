@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -73,8 +74,17 @@ public class InterviewService {
      * Get all interviews scheduled by a recruiter.
      */
     public List<InterviewResponse> getInterviewsByRecruiter(String recruiterEmail) {
-        return interviewRepository.findByRecruiterEmailOrderByCreatedAtDesc(recruiterEmail)
-                .stream()
+        List<Interview> list = interviewRepository.findByRecruiterEmailOrderByCreatedAtDesc(recruiterEmail);
+        LocalDate today = LocalDate.now();
+        for (Interview interview : list) {
+            if (interview.getStatus() == Interview.InterviewStatus.PENDING 
+                    && interview.getInterviewDate() != null 
+                    && interview.getInterviewDate().isBefore(today)) {
+                interview.setStatus(Interview.InterviewStatus.NO_RESPONSE);
+                interviewRepository.save(interview);
+            }
+        }
+        return list.stream()
                 .map(InterviewResponse::from)
                 .toList();
     }
@@ -83,8 +93,17 @@ public class InterviewService {
      * Get all interviews for a job.
      */
     public List<InterviewResponse> getInterviewsByJob(UUID jobId) {
-        return interviewRepository.findByJobIdOrderByCreatedAtDesc(jobId)
-                .stream()
+        List<Interview> list = interviewRepository.findByJobIdOrderByCreatedAtDesc(jobId);
+        LocalDate today = LocalDate.now();
+        for (Interview interview : list) {
+            if (interview.getStatus() == Interview.InterviewStatus.PENDING 
+                    && interview.getInterviewDate() != null 
+                    && interview.getInterviewDate().isBefore(today)) {
+                interview.setStatus(Interview.InterviewStatus.NO_RESPONSE);
+                interviewRepository.save(interview);
+            }
+        }
+        return list.stream()
                 .map(InterviewResponse::from)
                 .toList();
     }
@@ -136,6 +155,16 @@ public class InterviewService {
         publishStatusUpdateEvent(saved, "CANCELLED");
         
         return InterviewResponse.from(saved);
+    }
+
+    /**
+     * Permanently delete / remove an interview record from the system.
+     */
+    public void deleteInterviewPermanently(UUID interviewId) {
+        if (interviewRepository.existsById(interviewId)) {
+            interviewRepository.deleteById(interviewId);
+            log.info("[InterviewService] Interview permanently deleted: id={}", interviewId);
+        }
     }
 
     // ───────────────────────────── Private helpers ─────────────────────────────

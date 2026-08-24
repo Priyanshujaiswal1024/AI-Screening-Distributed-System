@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
     UploadCloud, FileText, CheckCircle2, AlertCircle, Clock,
-    RefreshCw, X, Search, ChevronDown, Sparkles, MessageSquare, Brain, HelpCircle, Briefcase, Copy, Bot, Volume2, VolumeX
+    RefreshCw, X, Search, ChevronDown, Sparkles, MessageSquare, Brain, HelpCircle, Briefcase, Copy, Bot, Volume2, VolumeX, RotateCcw
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { resumesApi } from '../api/resumesApi'
@@ -17,6 +17,7 @@ import { chatApi } from '../../chat/api/chatApi'
 import { useAuthStore } from '../../../shared/store/authStore'
 import { useRobotStore } from '../../../shared/store/robotStore'
 import FuturisticRobot3D from '../../../shared/components/robot/FuturisticRobot3D'
+import Pagination from '../../../shared/components/Pagination'
 
 // Hybrid resolver: uses actual database fields if screened, otherwise falls back to a consistent hash generator
 const getCandidateMetrics = (r) => {
@@ -315,6 +316,12 @@ export default function ResumesPage() {
     const [manualEmail, setManualEmail] = useState('')
     const [showArchived, setShowArchived] = useState(false)
     const [speechEnabled, setSpeechEnabled] = useState(false)
+    const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(10)
+
+    useEffect(() => {
+        setPage(1)
+    }, [search, selectedStatus, selectedJobId, showArchived])
 
     // Side-by-side chatbot state variables
     const [activeTab, setActiveTab] = useState('report')
@@ -874,19 +881,22 @@ export default function ResumesPage() {
                         }}>
                             {/* Table header */}
                             <div className="candidate-grid-header" style={{
-                                display: 'grid', gridTemplateColumns: '2.2fr 1fr 1fr 1.1fr',
+                                display: 'grid', gridTemplateColumns: '2fr 1.6fr 0.9fr 0.9fr 0.9fr',
                                 padding: '10px 16px', borderBottom: '1px solid var(--border)',
                                 background: 'var(--bg-tertiary)',
                             }}>
                                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resource & Skills</span>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Position & Type</span>
                                 <span className="hide-on-mobile" style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Experience</span>
                                 <span className="hide-on-mobile" style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Availability</span>
                                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</span>
                             </div>
 
-                            {filtered.map((r, idx) => {
+                            {filtered.slice((page - 1) * pageSize, page * pageSize).map((r, idx) => {
                                 const isSel = selectedResume?.id === r.id
                                 const metrics = getCandidateMetrics(r)
+                                const matchedJob = jobs.find(j => j.id === r.jobId)
+
                                 return (
                                     <motion.div
                                         key={r.id}
@@ -894,9 +904,9 @@ export default function ResumesPage() {
                                         onClick={() => setSelectedResume(isSel ? null : r)}
                                         className="candidate-grid-row"
                                         style={{
-                                            display: 'grid', gridTemplateColumns: '2.2fr 1fr 1fr 1.1fr',
+                                            display: 'grid', gridTemplateColumns: '2fr 1.6fr 0.9fr 0.9fr 0.9fr',
                                             padding: '12px 16px',
-                                            borderBottom: idx < filtered.length - 1 ? '1px solid var(--border)' : 'none',
+                                            borderBottom: idx < pageSize - 1 ? '1px solid var(--border)' : 'none',
                                             alignItems: 'center', transition: 'background 0.12s',
                                             cursor: 'pointer',
                                             background: isSel ? 'rgba(6,182,212,0.06)' : 'transparent',
@@ -917,7 +927,7 @@ export default function ResumesPage() {
                                                 {r.status === 'SCREENED' && (
                                                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                                                         {metrics.skills.slice(0, 2).map((s, idx2) => (
-                                                            <span key={idx2} style={{
+                                                             <span key={idx2} style={{
                                                                 fontSize: 9, padding: '1px 5px', borderRadius: 4,
                                                                 background: 'var(--bg-tertiary)', border: '1px solid var(--border)',
                                                                 color: 'var(--text-secondary)', fontWeight: 500
@@ -926,6 +936,38 @@ export default function ResumesPage() {
                                                             </span>
                                                         ))}
                                                     </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Position & Employment Type */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0, paddingRight: 8 }}>
+                                            <div style={{
+                                                fontSize: 12, fontWeight: 700, color: 'var(--text-primary)',
+                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                                            }} title={matchedJob?.title || 'General Pool'}>
+                                                <Briefcase size={11} style={{ display: 'inline', marginRight: 4, color: '#06b6d4' }} />
+                                                {matchedJob?.title || 'General Pool'}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                                                {matchedJob?.employmentType && (
+                                                    <span style={{
+                                                        fontSize: 9, padding: '1px 5px', borderRadius: 4, fontWeight: 700,
+                                                        background: matchedJob.employmentType.toLowerCase().includes('intern') ? 'rgba(245,158,11,0.1)' : 'rgba(139,92,246,0.1)',
+                                                        color: matchedJob.employmentType.toLowerCase().includes('intern') ? '#f59e0b' : '#8b5cf6',
+                                                        border: matchedJob.employmentType.toLowerCase().includes('intern') ? '1px solid rgba(245,158,11,0.25)' : '1px solid rgba(139,92,246,0.25)',
+                                                    }}>
+                                                        {matchedJob.employmentType}
+                                                    </span>
+                                                )}
+                                                {matchedJob?.workMode && (
+                                                    <span style={{
+                                                        fontSize: 9, padding: '1px 5px', borderRadius: 4, fontWeight: 600,
+                                                        background: 'rgba(6,182,212,0.08)', color: '#06b6d4',
+                                                        border: '1px solid rgba(6,182,212,0.2)',
+                                                    }}>
+                                                        {matchedJob.workMode}
+                                                    </span>
                                                 )}
                                             </div>
                                         </div>
@@ -952,6 +994,16 @@ export default function ResumesPage() {
                             })}
                         </div>
                     )}
+                    {filtered.length > 0 && (
+                        <Pagination
+                            currentPage={page}
+                            totalItems={filtered.length}
+                            pageSize={pageSize}
+                            onPageChange={setPage}
+                            onPageSizeChange={setPageSize}
+                            itemName="candidates"
+                        />
+                    )}
                 </div>
 
                 {/* Right side: Persistent Copilot / Details Panel */}
@@ -977,6 +1029,36 @@ export default function ResumesPage() {
                                         <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {selectedResume.candidateEmail && selectedResume.candidateEmail !== 'unknown@email.com' ? selectedResume.candidateEmail : 'No Email'}
                                         </p>
+                                        {(() => {
+                                            const job = jobs.find(j => j.id === selectedResume.jobId)
+                                            if (!job) return null
+                                            return (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                                                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--brand)' }}>
+                                                        💼 {job.title}
+                                                    </span>
+                                                    {job.employmentType && (
+                                                        <span style={{
+                                                            fontSize: 9.5, padding: '1px 6px', borderRadius: 4, fontWeight: 700,
+                                                            background: job.employmentType.toLowerCase().includes('intern') ? 'rgba(245,158,11,0.1)' : 'rgba(139,92,246,0.1)',
+                                                            color: job.employmentType.toLowerCase().includes('intern') ? '#f59e0b' : '#8b5cf6',
+                                                            border: job.employmentType.toLowerCase().includes('intern') ? '1px solid rgba(245,158,11,0.25)' : '1px solid rgba(139,92,246,0.25)',
+                                                        }}>
+                                                            {job.employmentType}
+                                                        </span>
+                                                    )}
+                                                    {job.workMode && (
+                                                        <span style={{
+                                                            fontSize: 9.5, padding: '1px 6px', borderRadius: 4, fontWeight: 600,
+                                                            background: 'rgba(6,182,212,0.08)', color: '#06b6d4',
+                                                            border: '1px solid rgba(6,182,212,0.2)',
+                                                        }}>
+                                                            {job.workMode}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )
+                                        })()}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                                             <span style={{ fontSize: 10, color: '#06b6d4', fontFamily: 'monospace', fontWeight: 600 }}>
                                                 ID: {selectedResume.id}
@@ -1497,6 +1579,24 @@ export default function ResumesPage() {
                                                     gap: 2,
                                                 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        {msg.role === 'user' && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => sendResumeChatMessage(msg.text)}
+                                                                title="Send this prompt again"
+                                                                style={{
+                                                                    background: 'none', border: 'none', padding: '1px 4px', cursor: 'pointer',
+                                                                    display: 'inline-flex', alignItems: 'center', gap: 3,
+                                                                    color: 'var(--text-muted)', borderRadius: 4,
+                                                                    fontSize: 9,
+                                                                }}
+                                                                onMouseEnter={e => { e.currentTarget.style.color = 'var(--brand)'; e.currentTarget.style.background = 'rgba(6,182,212,0.1)' }}
+                                                                onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'none' }}
+                                                            >
+                                                                <RotateCcw size={10} />
+                                                                <span>Resend</span>
+                                                            </button>
+                                                        )}
                                                         <span style={{ fontSize: 9, color: 'var(--text-faint)', fontWeight: 600 }}>
                                                             {msg.role === 'user' ? 'You' : 'TalentAI'}
                                                         </span>
@@ -1513,23 +1613,51 @@ export default function ResumesPage() {
                                                             </button>
                                                         )}
                                                     </div>
-                                                    <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { fontSize: 12, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' } : { fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-line' }}>
-                                                        {msg.role === 'ai' ? (
-                                                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-                                                                p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
-                                                                ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                                ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                                li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
-                                                                h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
-                                                                h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
-                                                                h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
-                                                            }}>
-                                                                {msg.text}
-                                                            </ReactMarkdown>
-                                                        ) : (
-                                                            msg.text
-                                                        )}
-                                                    </div>
+                                                    {(() => {
+                                                        const isRateLimit = msg.role === 'ai' && (
+                                                            msg.text.includes('Rate Limit') ||
+                                                            msg.text.includes('limit reached') ||
+                                                            msg.text.includes('rate_limit_exceeded') ||
+                                                            msg.text.includes('I encountered an error')
+                                                        )
+                                                        if (isRateLimit) {
+                                                            return (
+                                                                <div style={{
+                                                                    background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08))',
+                                                                    border: '1px solid rgba(245,158,11,0.3)',
+                                                                    borderRadius: 12, padding: '10px 12px', color: '#f59e0b',
+                                                                    boxShadow: '0 4px 16px rgba(245,158,11,0.15)', fontSize: 11.5
+                                                                }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, color: '#fbbf24', marginBottom: 3 }}>
+                                                                        <AlertCircle size={13} />
+                                                                        <span>Groq AI Limit Notice</span>
+                                                                    </div>
+                                                                    <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                                                                        AI limit reached. Please wait <strong>15–30 seconds</strong> and try again.
+                                                                    </p>
+                                                                </div>
+                                                            )
+                                                        }
+                                                        return (
+                                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { fontSize: 12, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' } : { fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-wrap' }}>
+                                                                {msg.role === 'ai' ? (
+                                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                                    }}>
+                                                                        {msg.text}
+                                                                    </ReactMarkdown>
+                                                                ) : (
+                                                                    msg.text
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    })()}
                                                 </div>
                                             ))}
                                             {chatLoading && (
@@ -1756,6 +1884,24 @@ export default function ResumesPage() {
                                             gap: 2,
                                         }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                {msg.role === 'user' && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => sendPipelineChatMessage(msg.text)}
+                                                        title="Send this prompt again"
+                                                        style={{
+                                                            background: 'none', border: 'none', padding: '1px 4px', cursor: 'pointer',
+                                                            display: 'inline-flex', alignItems: 'center', gap: 3,
+                                                            color: 'var(--text-muted)', borderRadius: 4,
+                                                            fontSize: 9,
+                                                        }}
+                                                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--brand)'; e.currentTarget.style.background = 'rgba(6,182,212,0.1)' }}
+                                                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'none' }}
+                                                    >
+                                                        <RotateCcw size={10} />
+                                                        <span>Resend</span>
+                                                    </button>
+                                                )}
                                                 <span style={{ fontSize: 9, color: 'var(--text-faint)', fontWeight: 600 }}>
                                                     {msg.role === 'user' ? 'You' : 'TalentAI'}
                                                 </span>
@@ -1772,23 +1918,51 @@ export default function ResumesPage() {
                                                     </button>
                                                 )}
                                             </div>
-                                            <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { fontSize: 12, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' } : { fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-wrap' }}>
-                                                {msg.role === 'ai' ? (
-                                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-                                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
-                                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
-                                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
-                                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
-                                                        h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
-                                                    }}>
-                                                        {msg.text}
-                                                    </ReactMarkdown>
-                                                ) : (
-                                                    msg.text
-                                                )}
-                                            </div>
+                                            {(() => {
+                                                const isRateLimit = msg.role === 'ai' && (
+                                                    msg.text.includes('Rate Limit') ||
+                                                    msg.text.includes('limit reached') ||
+                                                    msg.text.includes('rate_limit_exceeded') ||
+                                                    msg.text.includes('I encountered an error')
+                                                )
+                                                if (isRateLimit) {
+                                                    return (
+                                                        <div style={{
+                                                            background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08))',
+                                                            border: '1px solid rgba(245,158,11,0.3)',
+                                                            borderRadius: 12, padding: '10px 12px', color: '#f59e0b',
+                                                            boxShadow: '0 4px 16px rgba(245,158,11,0.15)', fontSize: 11.5
+                                                        }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, color: '#fbbf24', marginBottom: 3 }}>
+                                                                <AlertCircle size={13} />
+                                                                <span>Groq AI Limit Notice</span>
+                                                            </div>
+                                                            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                                                                AI limit reached. Please wait <strong>15–30 seconds</strong> and try again.
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                }
+                                                return (
+                                                    <div className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} style={msg.role === 'ai' ? { fontSize: 12, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '0.5rem' } : { fontSize: 12, padding: '8px 12px', whiteSpace: 'pre-wrap' }}>
+                                                        {msg.role === 'ai' ? (
+                                                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                                p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                                ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                                h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                                h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                                h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                            }}>
+                                                                {msg.text}
+                                                            </ReactMarkdown>
+                                                        ) : (
+                                                            msg.text
+                                                        )}
+                                                    </div>
+                                                )
+                                            })()}
                                         </div>
                                     ))}
                                     {pipelineLoading && (

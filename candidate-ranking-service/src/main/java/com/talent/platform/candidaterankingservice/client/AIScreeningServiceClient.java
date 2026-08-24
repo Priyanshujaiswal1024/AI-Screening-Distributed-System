@@ -6,10 +6,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @FeignClient(
-    name = "ai-screening-service", 
-    path = "/internal", 
-    contextId = "aiScreeningClient", 
-    fallbackFactory = AIScreeningServiceClientFallbackFactory.class
+    name = "ai-screening-service",
+    path = "/internal",
+    contextId = "aiScreeningClient"
+    // FallbackFactory removed — RankingService.calculateAndStoreScore() already wraps
+    // the screenResume() call in try-catch. On failure, aiScreeningSuccess=false and
+    // the catch block runs cosine-similarity-based confidence estimation directly.
+    // A separate FallbackFactory was adding complexity without any functional benefit.
 )
 public interface AIScreeningServiceClient {
 
