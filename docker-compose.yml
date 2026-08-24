@@ -243,6 +243,8 @@ services:
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
     networks:
       - talent-network
     deploy:
@@ -278,10 +280,10 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
-      - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
-      - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
     networks:
@@ -303,7 +305,6 @@ services:
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     networks:
       - talent-network
     deploy:
@@ -320,8 +321,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
-      - AWS_S3_ACCESS_KEY=${AWS_S3_ACCESS_KEY}
-      - AWS_S3_SECRET_KEY=${AWS_S3_SECRET_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
