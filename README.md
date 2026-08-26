@@ -196,20 +196,47 @@ graph TD
     class Client client
 ```
 
+### Part 1 — API Gateway → All Services
 
+```mermaid
+graph TD
+    Client([🌐 Web Client]) --> GW
 
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                           API GATEWAY  :8090                                      │
-│  Routes all external traffic. Auth validated via JWT on every request.           │
-└────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┘
-     │          │          │          │          │          │          │
-     ▼          ▼          ▼          ▼          ▼          ▼          ▼
-  Auth      User Mgmt   Job Desc  Resume    AI Screen  Candidate  Recruiter
- :8081      :8082       :8083     Mgmt:8084  :8085      Rank:8086  Chat:8087
+    GW["🔀 API Gateway :8090
+    Routes all external traffic
+    JWT Auth validated on every request"]
+
+    GW --> Auth["🔐 Auth Service
+    :8081"]
+    GW --> User["👤 User Mgmt
+    :8082"]
+    GW --> Job["📋 Job Desc Service
+    :8083"]
+    GW --> RM["📄 Resume Mgmt
+    :8084"]
+    GW --> AI["🧠 AI Screening
+    :8085"]
+    GW --> CR["🏆 Candidate Ranking
+    :8086"]
+    GW --> Chat["💬 Recruiter Chat
+    :8087"]
+    GW --> Intv["📅 Interview Scheduling
+    :8088"]
+    GW --> Notif["🔔 Notification
+    :8089"]
+
+    classDef gateway fill:#4f46e5,stroke:#818cf8,color:#fff,font-weight:bold
+    classDef service fill:#1e293b,stroke:#475569,color:#e2e8f0
+    classDef client fill:#064e3b,stroke:#10b981,color:#d1fae5
+
+    class GW gateway
+    class Auth,User,Job,RM,AI,CR,Chat,Intv,Notif service
+    class Client client
 ```
 
 ---
+
+
 
 ### Part 2 — Internal Feign REST Calls (Service → Service)
 
