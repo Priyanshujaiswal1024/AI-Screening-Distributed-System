@@ -27,50 +27,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * AI Screening Service — Full RAG + Screening pipeline.
- *
- * ═══════════════════════════════════════════════════════════════════
- * BUGS FIXED IN THIS VERSION:
- * ═══════════════════════════════════════════════════════════════════
- *
- * BUG A — ResumeUploadedConsumer called old 2-arg signature:
- *   processAndIndexResume(resumeId, fileUrl)
- *   NEW signature: processAndIndexResume(resumeId, fileUrl, recruiterId)
- *   recruiterId is REQUIRED so ResumeParsedConsumer in candidate-ranking-service
- *   can look up the recruiter's jobs and auto-rank the new resume.
- *
- * BUG B + E — publishStatusUpdate published a typed Java record:
- *   new ResumeStatusUpdatedEvent(resumeId, status)
- *   Jackson adds __TypeId__ header → resume-management's Map<String,Object> consumer
- *   throws MismatchedInputException → 3 retries → DLT → status NEVER updates.
- *   FIX: publish as plain HashMap — no __TypeId__, no class coupling.
- *
- * BUG D — Feign AND Kafka both fired unconditionally (double-write):
- *   FIX: Kafka fires ONLY when Feign throws. True fallback, not parallel.
- *
- * BUG F — CRITICAL: OllamaScreeningService.screenResume() was NEVER called.
- *   Pipeline stopped at PARSED. SCREENED was never published.
- *   FIX: Step 8 calls screenResume(). Step 9 publishes SCREENED.
- *
- * BUG G — LLM template: .param("text", excerpt) conflicts with Llama3's
- *   native template engine → "template string is not valid" error.
- *   FIX: String.format() / concatenation — zero .param() calls in extraction.
- *
- * BUG H — OllamaScreeningService used .param("jd", ...) and .param("resume", ...)
- *   Same Llama3 template conflict.
- *   FIX: Plain string concatenation in OllamaScreeningService (see that file).
- *
- * ═══════════════════════════════════════════════════════════════════
- * PIPELINE:
- *   UPLOADED → parse → embed → PARSED → screen → SCREENED
- *                                              ↓ (if Ollama down)
- *                                            stays PARSED (non-fatal)
- * ═══════════════════════════════════════════════════════════════════
  */
 @Service
 @Slf4j
@@ -83,6 +47,7 @@ public class AIScreeningService {
     private final ResumeManagementClient resumeManagementClient;
     private final ChatClient chatClient;
     private final OllamaScreeningService ollamaScreeningService;
+    private final SkillNormalizerService skillNormalizerService;
     private final TextChunker textChunker;
     private final JdbcTemplate jdbcTemplate;
     private final JobDescriptionClient jobDescriptionClient;
@@ -108,6 +73,7 @@ public class AIScreeningService {
             ResumeManagementClient resumeManagementClient,
             @Qualifier("screeningChatClient") ChatClient chatClient,
             OllamaScreeningService ollamaScreeningService,
+            SkillNormalizerService skillNormalizerService,
             TextChunker textChunker,
             JdbcTemplate jdbcTemplate,
             JobDescriptionClient jobDescriptionClient,
@@ -119,6 +85,7 @@ public class AIScreeningService {
         this.resumeManagementClient = resumeManagementClient;
         this.chatClient             = chatClient;
         this.ollamaScreeningService = ollamaScreeningService;
+        this.skillNormalizerService = skillNormalizerService;
         this.textChunker            = textChunker;
         this.jdbcTemplate           = jdbcTemplate;
         this.jobDescriptionClient   = jobDescriptionClient;
@@ -188,27 +155,25 @@ public class AIScreeningService {
             }
 
             try {
-                String excerpt = parsedText.substring(0, Math.min(15000, parsedText.length()));
+                String excerpt = parsedText.substring(0, Math.min(6000, parsedText.length()));
 
                 String prompt =
                         "Analyze the following resume text carefully and extract the candidate's core details.\n" +
-                        "Note that the details could be located anywhere, so scan the entire text. For experience, calculate the total years of professional work experience by summing up duration of all full-time jobs / corporate work history (e.g. from 2021-2023 is 2 years, etc.), even if not explicitly written as a total number.\n" +
+                        "Scan the entire text. For experience, calculate the total years of professional full-time corporate work experience.\n" +
                         "Return ONLY a JSON object in this exact format, nothing else:\n" +
                         "{\n" +
                         "  \"name\": \"Full Name Here\",\n" +
                         "  \"email\": \"email@example.com\",\n" +
-                        "  \"totalExperience\": 1.5,\n" +
-                        "  \"skills\": [\"React\", \"TypeScript\", \"Node.js\"],\n" +
+                        "  \"totalExperience\": 0.0,\n" +
+                        "  \"skills\": [\"Java\", \"Spring Boot\", \"Docker\", \"Kubernetes\", \"PostgreSQL\", \"AWS\", \"Kafka\"],\n" +
                         "  \"noticePeriod\": \"Immediate Joiner\"\n" +
                         "}\n\n" +
                         "Rules:\n" +
-                        "- totalExperience must be a number (Double/Float, e.g. 1.5 or 0.0), representing total years of professional work experience. Use 0.0 if no professional experience is found.\n" +
-                        "- DO NOT count education years (such as matriculation, high secondary, or college/university studies/degrees) towards professional experience.\n" +
-                        "- DO NOT count self-learning, training programs, or course durations (like DSA training) as professional work experience.\n" +
-                        "- Be extremely conservative: if no clear professional full-time jobs or formal corporate internships are listed, the experience must be 0.0.\n" +
-                        "- skills must be a JSON array of strings containing up to 6 key technical skills found in the resume.\n" +
-                        "- noticePeriod must be a string representing their notice period if mentioned (e.g., \"Immediate Joiner\", \"15 Days\", \"30 Days\", \"90 Days\"), otherwise \"Not Specified\".\n" +
-                        "- Do not include any explanations, markdown, or text outside the JSON.\n\n" +
+                        "- totalExperience must be a number (Double/Float, e.g. 2.5 or 0.0). If the candidate is a fresher, student, or total experience is less than 1 year, totalExperience MUST be 0.0.\n" +
+                        "- DO NOT count education degrees as professional work experience.\n" +
+                        "- skills must be a JSON array containing ALL technical skills, languages, frameworks, databases, cloud, and DevOps tools found in the resume (e.g. Java, Spring Boot, React, PostgreSQL, Docker, Kubernetes, AWS, Kafka, Microservices, Redis, Git, Jenkins, CI/CD, etc.).\n" +
+                        "- noticePeriod must be a string (e.g., \"Immediate Joiner\", \"15 Days\", \"30 Days\"), otherwise \"Not Specified\".\n" +
+                        "- Do not include any markdown ticks or text outside the JSON.\n\n" +
                         "Resume text:\n" + excerpt;
 
                 String extraction = chatClient.prompt()
@@ -238,20 +203,35 @@ public class AIScreeningService {
                 try {
                     String expStr = extractJsonField(clean, "totalExperience");
                     if (expStr != null && !expStr.isBlank()) {
-                        extractedExp = Double.valueOf(expStr);
+                        double parsed = Double.parseDouble(expStr);
+                        extractedExp = (parsed < 1.0) ? 0.0 : parsed;
                     }
                 } catch (Exception e) {
                     log.warn("[AIScreening] Failed to parse extracted totalExperience: {}", e.getMessage());
                 }
 
-                // FIX 2: Use the new extractSkills method which scans all sections and normalizes using SkillNormalizerService
+                // Extract all skills from the unified extraction response
                 try {
-                    List<String> normalizedSkills = ollamaScreeningService.extractSkills(parsedText);
-                    if (!normalizedSkills.isEmpty()) {
-                        extractedSkills = String.join(", ", normalizedSkills);
+                    Set<String> normSet = new LinkedHashSet<>();
+                    if (clean.contains("\"skills\"")) {
+                        com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(clean);
+                        if (rootNode.has("skills") && rootNode.get("skills").isArray()) {
+                            for (com.fasterxml.jackson.databind.JsonNode sn : rootNode.get("skills")) {
+                                if (sn.isTextual() && !sn.asText().isBlank()) {
+                                    String norm = skillNormalizerService.normalize(sn.asText().trim());
+                                    if (norm != null && !norm.isBlank()) {
+                                        normSet.add(norm);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!normSet.isEmpty()) {
+                        extractedSkills = String.join(", ", normSet);
                     }
                 } catch (Exception e) {
-                    log.warn("[FIX] [AIScreening] Failed to extract normalized skills: {}", e.getMessage());
+                    log.warn("[FIX] [AIScreening] Failed to parse/normalize skills: {}", e.getMessage());
                 }
 
                 try {

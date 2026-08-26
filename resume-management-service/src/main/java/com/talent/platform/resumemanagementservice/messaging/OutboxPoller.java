@@ -28,7 +28,7 @@ public class OutboxPoller {
     private final ObjectMapper objectMapper;
     private final MeterRegistry meterRegistry;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 1000)
     @Transactional
     public void pollAndPublish() {
         // Query pending events, skip locked rows to allow parallel processing

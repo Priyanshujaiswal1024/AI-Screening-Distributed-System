@@ -195,20 +195,24 @@ public class RankingService {
 
             if (aiResult != null) {
                 // ──────────────────────────────────────────────────────────────────
-                // HYBRID SCORING: 70% Skill Math + 30% Semantic Cosine Similarity
-                // • skillScore   = deterministic Java match (hard skill coverage)
-                // • semanticSim  = cosine similarity from ai-screening-service embeddings
-                // • finalScore   = weighted combination, rounded to 1 decimal
+                // CONFIDENCE-WEIGHTED HYBRID SCORING ENGINE:
+                // • 50% Skill Math Coverage (deterministic verified skill matches)
+                // • 30% AI Vector Semantic Cosine Similarity (domain & project alignment)
+                // • 20% AI Confidence Score (extraction certainty & depth validation)
                 // ──────────────────────────────────────────────────────────────────
                 double semanticSim = aiResult.getCosineSimilarity(); // 0.0–1.0
-                double hybridScore = Math.round(
-                        ((0.70 * calculatedSkillScore) + (0.30 * semanticSim * 100.0)) * 10.0) / 10.0;
+                confidence = aiResult.getConfidenceScore() > 0 ? aiResult.getConfidenceScore() : 0.85;
 
-                log.info("[RankingService] Hybrid Score: skillMath={}% cosine={} final={}%",
-                        calculatedSkillScore, semanticSim, hybridScore);
+                double rawHybridScore = (0.50 * calculatedSkillScore) 
+                        + (0.30 * semanticSim * 100.0) 
+                        + (0.20 * confidence * 100.0);
+
+                double hybridScore = Math.round(Math.min(100.0, Math.max(0.0, rawHybridScore)) * 10.0) / 10.0;
+
+                log.info("[RankingService] Confidence-Aware Hybrid Score: skillMath={}% cosine={} confidence={} -> finalMatchScore={}%",
+                        calculatedSkillScore, semanticSim, confidence, hybridScore);
 
                 matchScore = hybridScore;
-                confidence = aiResult.getConfidenceScore();
                 
                 List<String> matchedNames = new ArrayList<>();
                 for (Map<String, Object> m : matchedList) {
@@ -322,7 +326,7 @@ public class RankingService {
 
     public List<ScreeningReport> getRankedCandidates(UUID jobId) {
         List<ScreeningReport> list =
-                repository.findByJobDescriptionIdOrderByMatchScoreDesc(jobId);
+                repository.findByJobDescriptionIdOrderByMatchScoreDescConfidenceScoreDesc(jobId);
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setCandidateRank(i + 1);
         }

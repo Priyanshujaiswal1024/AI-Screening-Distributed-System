@@ -280,7 +280,10 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
-      - GROQ_API_KEY=${GROQ_API_KEY}
+      - USE_OPENAI_CHAT=true
+      - USE_OLLAMA_CHAT=false
+      - GROQ_MODEL=${GROQ_MODEL_SCREENING:-openai/gpt-oss-20b}
+      - GROQ_API_KEY=${GROQ_API_KEY_SCREENING:-${GROQ_API_KEY}}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
@@ -321,7 +324,10 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
-      - GROQ_API_KEY=${GROQ_API_KEY}
+      - USE_OPENAI_CHAT=true
+      - USE_OLLAMA_CHAT=false
+      - GROQ_MODEL=${GROQ_MODEL_CHAT:-openai/gpt-oss-120b}
+      - GROQ_API_KEY=${GROQ_API_KEY_CHAT:-${GROQ_API_KEY}}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434

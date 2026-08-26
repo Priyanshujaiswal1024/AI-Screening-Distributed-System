@@ -19,18 +19,29 @@ public class SkillNormalizerService {
         ALIAS_MAP.put("javascript", List.of("js", "es6", "es2022", "es2023", "vanilla js", "ecmascript", "javascript developer", "js developer"));
         ALIAS_MAP.put("express", List.of("expressjs", "express.js", "express js", "express framework"));
         ALIAS_MAP.put("mongodb", List.of("mongo db", "mongo", "mongodb atlas", "nosql mongodb"));
-        ALIAS_MAP.put("postgresql", List.of("postgres", "psql", "pg", "postgresql database"));
+        ALIAS_MAP.put("postgresql", List.of("postgres", "psql", "pg", "postgresql database", "pgvector"));
         ALIAS_MAP.put("redux", List.of("redux toolkit", "rtk", "react-redux", "redux js"));
         ALIAS_MAP.put("java", List.of("java 17", "java 21", "java 8", "java developer", "core java"));
-        ALIAS_MAP.put("spring boot", List.of("springboot", "spring-boot", "spring framework boot"));
+        ALIAS_MAP.put("spring boot", List.of("springboot", "spring-boot", "spring framework boot", "spring cloud", "spring ai", "spring security"));
         ALIAS_MAP.put("mysql", List.of("my sql", "mysql database", "mysql 8"));
         ALIAS_MAP.put("docker", List.of("docker container", "dockerfile", "docker compose"));
-        ALIAS_MAP.put("kubernetes", List.of("k8s", "kube", "kubectl"));
+        ALIAS_MAP.put("kubernetes", List.of("k8s", "kube", "kubectl", "k8s cluster"));
         ALIAS_MAP.put("git", List.of("github", "gitlab", "git version control"));
         ALIAS_MAP.put("html", List.of("html5", "html 5", "html css", "html/css"));
         ALIAS_MAP.put("bootstrap", List.of("bootstrap 5", "bootstrap css", "bootstrap framework"));
         ALIAS_MAP.put("socket.io", List.of("socketio", "socket io", "websocket"));
         ALIAS_MAP.put("php", List.of("php 8", "php developer", "php language"));
+        ALIAS_MAP.put("aws", List.of("amazon web services", "aws ec2", "aws s3", "ec2", "s3", "lambda"));
+        ALIAS_MAP.put("kafka", List.of("apache kafka", "kafka streaming", "kafka message broker"));
+        ALIAS_MAP.put("redis", List.of("redis cache", "redis in-memory"));
+        ALIAS_MAP.put("microservices", List.of("microservice", "microservices architecture", "distributed systems", "distributed system"));
+        ALIAS_MAP.put("jenkins", List.of("jenkins ci", "jenkins pipeline"));
+        ALIAS_MAP.put("ci/cd", List.of("cicd", "continuous integration", "continuous deployment", "ci cd"));
+        ALIAS_MAP.put("rest api", List.of("rest", "restful", "rest apis", "restful api", "rest web services"));
+        ALIAS_MAP.put("sql", List.of("structured query language", "plsql", "t-sql"));
+        ALIAS_MAP.put("hibernate", List.of("hibernate orm", "jpa", "spring data jpa"));
+        ALIAS_MAP.put("junit", List.of("junit 5", "junit4", "mockito", "unit testing"));
+        ALIAS_MAP.put("maven", List.of("apache maven", "gradle"));
     }
 
     public enum MatchConfidence {

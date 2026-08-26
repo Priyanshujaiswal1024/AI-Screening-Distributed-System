@@ -11,6 +11,7 @@ import java.util.UUID;
 @Repository
 public interface ScreeningReportRepository extends JpaRepository<ScreeningReport, UUID> {
     List<ScreeningReport> findByJobDescriptionIdOrderByMatchScoreDesc(UUID jobDescriptionId);
+    List<ScreeningReport> findByJobDescriptionIdOrderByMatchScoreDescConfidenceScoreDesc(UUID jobDescriptionId);
     Optional<ScreeningReport> findByResumeIdAndJobDescriptionId(UUID resumeId, UUID jobDescriptionId);
     List<ScreeningReport> findByResumeId(UUID resumeId);
     void deleteByResumeId(UUID resumeId);

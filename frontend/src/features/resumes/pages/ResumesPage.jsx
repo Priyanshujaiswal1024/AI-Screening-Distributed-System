@@ -19,6 +19,19 @@ import { useRobotStore } from '../../../shared/store/robotStore'
 import FuturisticRobot3D from '../../../shared/components/robot/FuturisticRobot3D'
 import Pagination from '../../../shared/components/Pagination'
 
+// Helper to format experience into clean human-readable "X Years Y Months" (e.g. 2.83 -> "2 Years 10 Months")
+export const formatExperience = (exp) => {
+    if (exp === undefined || exp === null || exp === '' || isNaN(exp)) return '—'
+    const num = parseFloat(exp)
+    if (num < 1.0) return '0 Years (Fresher)'
+    
+    const years = Math.floor(num)
+    const months = Math.round((num - years) * 12)
+    
+    if (months === 0) return `${years} Year${years > 1 ? 's' : ''}`
+    return `${years} Year${years > 1 ? 's' : ''} ${months} Month${months > 1 ? 's' : ''}`
+}
+
 // Hybrid resolver: uses actual database fields if screened, otherwise falls back to a consistent hash generator
 const getCandidateMetrics = (r) => {
     if (!r) return { totalExp: 0, noticeDays: 'Not Specified', skills: [], clientReady: 'Client Ready (L1)' }
@@ -175,7 +188,7 @@ function ClientPitchDialog({ open, onClose, resume, report, metrics }) {
     // Anonymize details
     const anonymizedId = resume.id.slice(0, 4).toUpperCase()
     const anonymizedName = `Consultant #${anonymizedId}`
-    const experienceText = `${metrics.totalExp} Years`
+    const experienceText = formatExperience(metrics.totalExp)
     const primarySkills = metrics.skills.join(', ')
 
     // Formatted pitch text
@@ -974,7 +987,7 @@ export default function ResumesPage() {
 
                                         {/* Experience */}
                                         <span className="hide-on-mobile" style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                                            {r.status === 'SCREENED' ? `${metrics.totalExp} Years` : '—'}
+                                            {r.status === 'SCREENED' ? formatExperience(metrics.totalExp) : '—'}
                                         </span>
 
                                         {/* Availability */}
@@ -1255,7 +1268,7 @@ export default function ResumesPage() {
                                                                     <div>
                                                                         <span style={{ color: 'var(--text-faint)' }}>Total Experience:</span>
                                                                         <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginTop: 2 }}>
-                                                                            {getCandidateMetrics(selectedResume).totalExp} Years
+                                                                            {formatExperience(getCandidateMetrics(selectedResume).totalExp)}
                                                                         </div>
                                                                     </div>
                                                                     <div>

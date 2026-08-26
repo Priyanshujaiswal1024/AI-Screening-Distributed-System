@@ -35,6 +35,8 @@ spring:
         spring.json.trusted.packages: "*"
         spring.json.use.type.headers: false
         spring.json.value.default.type: java.util.LinkedHashMap
+        spring.kafka.consumer.properties.max.poll.interval.ms: 900000
+        max.poll.interval.ms: 900000
 
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -47,23 +49,25 @@ spring:
 
   ai:
     ollama:
-      base-url: http://localhost:11434
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
       chat:
-        enabled: false # Disabled Chat in Ollama, using Groq instead
-        model: qwen2.5:1.5b
+        enabled: ${USE_OLLAMA_CHAT:false} # Set true only if running 100% offline without internet
+        model: ${OLLAMA_CHAT_MODEL:qwen2.5:1.5b}
       embedding:
         enabled: true
         model: nomic-embed-text
 
     openai:
-      base-url: https://api.groq.com/openai
-      api-key: ${GROQ_API_KEY:your_groq_api_key}
+      base-url: ${GROQ_BASE_URL:https://api.groq.com/openai}
+      api-key: ${GROQ_API_KEY_SCREENING:${GROQ_API_KEY:}}
       chat:
-        enabled: true
+        enabled: ${USE_OPENAI_CHAT:true} # Default = Groq Cloud (Ultra-fast 0.3s response)
         options:
-          model: openai/gpt-oss-20b
+          model: ${GROQ_MODEL_SCREENING:${GROQ_MODEL:openai/gpt-oss-20b}}
+          max-tokens: 4096
+          temperature: 0.1
       embedding:
-        enabled: false # Do not use OpenAI for embeddings (keeps it free via Ollama)
+        enabled: false # Embeddings always handled locally/efficiently via nomic-embed-text
 
     vectorstore:
       pgvector:
@@ -125,7 +129,7 @@ resilience4j:
 
 aws:
   s3:
-    bucket: talent-intelligence-resumes-2026
-    region: eu-north-1
-    access-key: ${AWS_ACCESS_KEY_ID:your_aws_access_key}
-    secret-key: ${AWS_SECRET_ACCESS_KEY:your_aws_secret_key}
+    bucket: ${AWS_S3_BUCKET:talent-intelligence-resumes-2026}
+    region: ${AWS_REGION:eu-north-1}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
