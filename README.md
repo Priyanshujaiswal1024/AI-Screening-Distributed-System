@@ -94,87 +94,79 @@ AI Online  → hybridScore = (0.70 × skillMath) + (0.30 × cosine×100) | aiScr
 AI Offline → fallbackScore = 100% skillMath                          | aiScreened = false
              confidenceScore = 0.0
              summary = "Match: X%. Matched: [...]. (AI screening unavailable)"
-```
-
-The recruiter UI shows `🟢 AI Screened` or `⚠️ Rule-Based Fallback` accordingly.
-
----
-
 ## 🕸️ Complete System Architecture
 
-### Diagram 1 — Service Map (API Gateway → All Services)
+### Diagram 1 — Service Map (API Gateway to All Services)
 
 ```mermaid
 graph LR
-    Client([🌐 Web Client]) --> GW["🔀 API Gateway\n:8090\nJWT Auth + Routing"]
+    Client([Web Client]) --> GW[API Gateway :8090]
 
-    GW --> Auth["🔐 Auth\n:8081"]
-    GW --> User["👤 User Mgmt\n:8082"]
-    GW --> Job["📋 Job Desc\n:8083"]
-    GW --> RM["📄 Resume Mgmt\n:8084"]
-    GW --> AI["🧠 AI Screening\n:8085"]
-    GW --> CR["🏆 Candidate Ranking\n:8086"]
-    GW --> Chat["💬 Recruiter Chat\n:8087"]
-    GW --> Intv["📅 Interview\n:8088"]
-    GW --> Notif["🔔 Notification\n:8089"]
+    GW --> Auth[Auth Service :8081]
+    GW --> User[User Mgmt :8082]
+    GW --> Job[Job Desc :8083]
+    GW --> RM[Resume Mgmt :8084]
+    GW --> AI[AI Screening :8085]
+    GW --> CR[Candidate Ranking :8086]
+    GW --> Chat[Recruiter Chat :8087]
+    GW --> Intv[Interview Svc :8088]
+    GW --> Notif[Notification :8089]
 
-    Auth -.-> Redis[("⚡ Redis")]
+    Auth -.->|JWT store| Redis[(Redis)]
     CR --> Redis
-    CR --> PG[("🗄️ PostgreSQL\n+ PgVector")]
+    CR --> PG[(PostgreSQL + PgVector)]
     AI --> PG
-    AI --> Ollama["🤖 Ollama\nnomic-embed-text"]
-    RM --> S3[("☁️ AWS S3")]
+    AI --> Ollama[Ollama nomic-embed-text]
+    RM --> S3[(AWS S3)]
     Job --> PG
     User --> PG
 
-    classDef gw     fill:#4f46e5,stroke:#818cf8,color:#fff,font-weight:bold
-    classDef svc    fill:#0f172a,stroke:#334155,color:#e2e8f0
-    classDef infra  fill:#1e293b,stroke:#475569,color:#94a3b8
-    classDef client fill:#064e3b,stroke:#10b981,color:#d1fae5
+    classDef gw    fill:#4f46e5,stroke:#818cf8,color:#fff
+    classDef svc   fill:#0f172a,stroke:#334155,color:#e2e8f0
+    classDef infra fill:#1e293b,stroke:#475569,color:#94a3b8
 
     class GW gw
     class Auth,User,Job,RM,AI,CR,Chat,Intv,Notif svc
     class Redis,PG,Ollama,S3 infra
-    class Client client
 ```
 
 ---
 
-### Diagram 2 — Kafka Event Bus (All Topics: Publishers → Consumers)
+### Diagram 2 — Kafka Event Bus (Publishers → Topics → Consumers)
 
 ```mermaid
 graph LR
-    subgraph PUB["📤 Publishers"]
-        Auth["🔐 Auth Service"]
-        User["👤 User Mgmt"]
-        Job["📋 Job Desc"]
-        RM["📄 Resume Mgmt\n(Outbox Poller)"]
-        AI["🧠 AI Screening"]
-        CR["🏆 Candidate Ranking"]
-        Chat["💬 Recruiter Chat"]
-        Intv["📅 Interview Service"]
+    subgraph PUB[Publishers]
+        Auth[Auth Service]
+        User[User Mgmt]
+        Job[Job Desc]
+        RM[Resume Mgmt]
+        AI[AI Screening]
+        CR[Candidate Ranking]
+        Chat[Recruiter Chat]
+        Intv[Interview Svc]
     end
 
-    subgraph KAFKA["📨 Apache Kafka :9092"]
-        T1["auth-events"]
-        T2["user-events"]
-        T3["job-events"]
-        T4["resume-uploaded"]
-        T5["resume-parsed"]
-        T6["resume-status-updated"]
-        T7["resume-deleted"]
-        T8["interview-scheduled"]
-        T9["interview-status-updated"]
-        T10["chat.interaction.completed"]
+    subgraph KAFKA[Apache Kafka - 9092]
+        T1[auth-events]
+        T2[user-events]
+        T3[job-events]
+        T4[resume-uploaded]
+        T5[resume-parsed]
+        T6[resume-status-updated]
+        T7[resume-deleted]
+        T8[interview-scheduled]
+        T9[interview-status-updated]
+        T10[chat.interaction.completed]
     end
 
-    subgraph CON["▶ Consumers"]
-        UserC["👤 User Mgmt"]
-        NotifC["🔔 Notification"]
-        AIC["🧠 AI Screening"]
-        CRC["🏆 Candidate Ranking"]
-        RMC["📄 Resume Mgmt"]
-        ChatC["💬 Recruiter Chat"]
+    subgraph CON[Consumers]
+        UserC[User Mgmt]
+        NotifC[Notification]
+        AIC[AI Screening]
+        CRC[Candidate Ranking]
+        RMC[Resume Mgmt]
+        ChatC[Recruiter Chat]
     end
 
     Auth  --> T1
@@ -216,29 +208,29 @@ graph LR
 
 ---
 
-### Diagram 3 — Internal Feign REST Calls (Service → Service)
+### Diagram 3 — Internal Feign REST Calls (Service to Service)
 
 ```mermaid
 graph LR
-    CR["🏆 Candidate\nRanking :8086"]
-    AI["🧠 AI Screening\n:8085"]
-    Chat["💬 Recruiter\nChat :8087"]
-    Job["📋 Job Desc\n:8083"]
-    RM["📄 Resume Mgmt\n:8084"]
+    CR[Candidate Ranking :8086]
+    AI[AI Screening :8085]
+    Chat[Recruiter Chat :8087]
+    Job[Job Desc :8083]
+    RM[Resume Mgmt :8084]
 
-    CR -- "GET /jobs/{id}/text\nGET /jobs/{id}/skills" --> Job
-    CR -- "GET /resumes/{id}/candidate-info\nGET /resumes/{id}/skills" --> RM
-    CR -- "GET /chunks/{id}/text" --> AI
-    CR -- "POST /screening/ollama\n(resumeText + jdText)" --> AI
+    CR -->|GET /jobs/text + skills| Job
+    CR -->|GET /resumes/candidate-info| RM
+    CR -->|GET /chunks/text| AI
+    CR -->|POST /screening/ollama| AI
 
-    AI -- "GET /screening-reports/ranked\nGET /screening-reports/score" --> CR
-    AI -- "GET /jobs/{id}/details" --> Job
-    AI -- "GET /resumes/{id}/candidate-info" --> RM
+    AI -->|GET /screening-reports/ranked| CR
+    AI -->|GET /jobs/details| Job
+    AI -->|GET /resumes/candidate-info| RM
 
-    Chat -- "GET /chunks/{resumeId}\nGET /chunks/all" --> AI
-    Chat -- "GET /screening-reports/ranked\nGET /screening-reports/{resumeId}" --> CR
-    Chat -- "GET /jobs/{id}/details" --> Job
-    Chat -- "GET /resumes/{id}/candidate-info" --> RM
+    Chat -->|GET /chunks/resumeId| AI
+    Chat -->|GET /screening-reports/ranked| CR
+    Chat -->|GET /jobs/details| Job
+    Chat -->|GET /resumes/candidate-info| RM
 
     classDef ranking fill:#4338ca,stroke:#818cf8,color:#e0e7ff
     classDef aiscr   fill:#7c2d12,stroke:#f97316,color:#fed7aa
@@ -252,6 +244,7 @@ graph LR
     class Job job
     class RM resume
 ```
+
 
 
 ### Part 2 — Internal Feign REST Calls (Service → Service)
