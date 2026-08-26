@@ -209,21 +209,33 @@ public class ResumeController {
         return resumeRepository.findById(id)
                 .map(resume -> {
                     try {
-                        var s3is = storageService.download(resume.getFileUrl());
+                        var is = storageService.download(resume.getFileUrl());
                         String filename = resume.getFileUrl().substring(resume.getFileUrl().lastIndexOf("_") + 1);
-                        String contentType = s3is.response().contentType();
-                        if (contentType == null) {
-                            contentType = "application/octet-stream";
-                        }
+                        String contentType = filename.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
                         return ResponseEntity.ok()
                                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                                 .contentType(MediaType.parseMediaType(contentType))
-                                .body(new org.springframework.core.io.InputStreamResource(s3is));
+                                .body(new org.springframework.core.io.InputStreamResource(is));
                     } catch (Exception e) {
                         log.error("Failed to stream file for resume={}: {}", id, e.getMessage());
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<org.springframework.core.io.InputStreamResource>build();
                     }
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/raw-file/{filename:.+}")
+    public ResponseEntity<org.springframework.core.io.InputStreamResource> getRawFile(@PathVariable String filename) {
+        try {
+            var is = storageService.download(filename);
+            String contentType = filename.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(new org.springframework.core.io.InputStreamResource(is));
+        } catch (Exception e) {
+            log.error("Failed to stream raw file {}: {}", filename, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
