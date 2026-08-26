@@ -36,6 +36,10 @@ public interface AIScreeningServiceClient {
 
     class ScreeningResultDto {
         private double matchScore;
+        // Semantic cosine similarity (0.0–1.0) between JD and resume vectors.
+        // Calculated by ai-screening-service using nomic-embed-text embeddings.
+        // Used by candidate-ranking-service for 30% weight in hybrid scoring.
+        private double cosineSimilarity;
         private List<String> strengths;
         private List<String> missingSkills;
         private double confidenceScore;
@@ -54,6 +58,8 @@ public interface AIScreeningServiceClient {
         public ScreeningResultDto() {}
         public double getMatchScore() { return matchScore; }
         public void setMatchScore(double matchScore) { this.matchScore = matchScore; }
+        public double getCosineSimilarity() { return cosineSimilarity; }
+        public void setCosineSimilarity(double cosineSimilarity) { this.cosineSimilarity = cosineSimilarity; }
         public List<String> getStrengths() { return strengths; }
         public void setStrengths(List<String> strengths) { this.strengths = strengths; }
         public List<String> getMissingSkills() { return missingSkills; }

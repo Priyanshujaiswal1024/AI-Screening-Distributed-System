@@ -194,7 +194,20 @@ public class RankingService {
             AIScreeningServiceClient.ScreeningResultDto aiResult = aiScreeningServiceClient.screenResume(screenReq);
 
             if (aiResult != null) {
-                matchScore = calculatedSkillScore; // Use precise calculated skill score
+                // ──────────────────────────────────────────────────────────────────
+                // HYBRID SCORING: 70% Skill Math + 30% Semantic Cosine Similarity
+                // • skillScore   = deterministic Java match (hard skill coverage)
+                // • semanticSim  = cosine similarity from ai-screening-service embeddings
+                // • finalScore   = weighted combination, rounded to 1 decimal
+                // ──────────────────────────────────────────────────────────────────
+                double semanticSim = aiResult.getCosineSimilarity(); // 0.0–1.0
+                double hybridScore = Math.round(
+                        ((0.70 * calculatedSkillScore) + (0.30 * semanticSim * 100.0)) * 10.0) / 10.0;
+
+                log.info("[RankingService] Hybrid Score: skillMath={}% cosine={} final={}%",
+                        calculatedSkillScore, semanticSim, hybridScore);
+
+                matchScore = hybridScore;
                 confidence = aiResult.getConfidenceScore();
                 
                 List<String> matchedNames = new ArrayList<>();
@@ -226,17 +239,22 @@ public class RankingService {
                 }
                 report.setStructuredSummary(summaryBuilder.toString().trim());
                 report.setRequirementsChecklist(checklistJson);
+
+                // Persist hybrid scoring metadata
+                report.setSemanticScore(semanticSim);
+                report.setAiScreened(true);
                 
                 aiScreeningSuccess = true;
-                log.info("[RankingService] AI screening success. Score={}", matchScore);
+                log.info("[RankingService] AI screening success. HybridScore={}", matchScore);
             }
         } catch (Exception e) {
             log.warn("[RankingService] AI screening service call failed: {}. Populating report from skill-match data only.", e.getMessage());
         }
 
-        // If AI call failed — populate report from Java skill-match results.
-        // Score is always calculatedSkillScore (pure math). Confidence = 0.0
-        // because there is no qualitative AI signal to estimate it from.
+        // FALLBACK — AI Screening offline or timed out.
+        // Score = calculatedSkillScore (100% Java math — deterministic, always accurate).
+        // semanticScore = 0.0 (no vector similarity available without AI service).
+        // aiScreened = false — UI will render ⚠️ Rule-Based Fallback badge.
         if (!aiScreeningSuccess) {
             matchScore = calculatedSkillScore;
             confidence = 0.0;
@@ -257,8 +275,13 @@ public class RankingService {
                     matchScore,
                     matchedNames.isEmpty() ? "none" : String.join(", ", matchedNames),
                     missingNames.isEmpty() ? "none" : String.join(", ", missingNames)));
-
             report.setRequirementsChecklist(checklistJson);
+
+            // Persist fallback metadata
+            report.setSemanticScore(0.0);
+            report.setAiScreened(false);
+
+            log.warn("[RankingService] Fallback mode: aiScreened=false semanticScore=0.0 skillScore={}", matchScore);
         }
 
         report.setCandidateName(candidateName);

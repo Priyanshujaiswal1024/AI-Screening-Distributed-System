@@ -6,6 +6,7 @@ import com.talent.platform.aiscreening.dto.ScreeningRequest;
 import com.talent.platform.aiscreening.dto.ScreeningResult;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +18,16 @@ public class OllamaScreeningService {
 
     private final ChatClient chatClient;
     private final SkillNormalizerService skillNormalizerService;
+    private final EmbeddingModel embeddingModel;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public OllamaScreeningService(
             @Qualifier("screeningChatClient") ChatClient chatClient,
-            SkillNormalizerService skillNormalizerService) {
+            SkillNormalizerService skillNormalizerService,
+            EmbeddingModel embeddingModel) {
         this.chatClient = chatClient;
         this.skillNormalizerService = skillNormalizerService;
+        this.embeddingModel = embeddingModel;
     }
 
     public List<String> extractSkills(String resumeText) {
@@ -177,9 +181,37 @@ public class OllamaScreeningService {
                 clean = clean.substring(start, end + 1);
             }
 
-            return objectMapper.readValue(clean, ScreeningResult.class);
+            ScreeningResult result = objectMapper.readValue(clean, ScreeningResult.class);
+
+            // Architect-Grade: Compute Semantic Cosine Similarity between JD and Resume
+            try {
+                if (embeddingModel != null && request.getJobDescription() != null && request.getResumeText() != null) {
+                    float[] jdEmb = embeddingModel.embed(request.getJobDescription());
+                    String resumeSample = request.getResumeText().substring(0, Math.min(6000, request.getResumeText().length()));
+                    float[] resumeEmb = embeddingModel.embed(resumeSample);
+                    double cosSim = calculateCosineSimilarity(jdEmb, resumeEmb);
+                    result.setCosineSimilarity(Math.round(cosSim * 1000.0) / 1000.0);
+                    log.info("[OllamaScreeningService] Calculated Semantic Cosine Similarity: {}", result.getCosineSimilarity());
+                }
+            } catch (Exception e) {
+                log.warn("[OllamaScreeningService] Failed to calculate semantic cosine similarity: {}", e.getMessage());
+                result.setCosineSimilarity(0.0);
+            }
+
+            return result;
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse screening result from Ollama: " + e.getMessage(), e);
         }
+    }
+
+    private double calculateCosineSimilarity(float[] a, float[] b) {
+        if (a == null || b == null || a.length != b.length) return 0.0;
+        double dot = 0, na = 0, nb = 0;
+        for (int i = 0; i < a.length; i++) {
+            dot += a[i] * b[i];
+            na  += a[i] * a[i];
+            nb  += b[i] * b[i];
+        }
+        return (na == 0 || nb == 0) ? 0.0 : Math.max(0.0, Math.min(1.0, dot / (Math.sqrt(na) * Math.sqrt(nb))));
     }
 }

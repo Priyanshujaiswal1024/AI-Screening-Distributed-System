@@ -56,6 +56,18 @@ public class ScreeningReport {
     @Column(name = "confidence_score")
     private double confidenceScore;
 
+    // HYBRID SCORING: Semantic cosine similarity (0.0–1.0) from ai-screening-service.
+    // Used as 30% component in: finalScore = 0.70*skillMathScore + 0.30*(semanticScore*100)
+    // Set to 0.0 if AI service is unavailable during screening.
+    @Column(name = "semantic_score")
+    private double semanticScore;
+
+    // AI STATUS FLAG: true = screened by LLM (full qualitative analysis + cosine similarity)
+    //                 false = fallback (skill math only, AI was offline)
+    // Used by the Recruiter UI to show 🟢 AI Screened or ⚠️ Rule-Based Fallback badge.
+    @Column(name = "ai_screened")
+    private boolean aiScreened;
+
     // candidateRank is computed at runtime — correct to keep @Transient
     @Transient
     private int candidateRank;

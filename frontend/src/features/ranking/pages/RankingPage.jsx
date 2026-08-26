@@ -247,6 +247,41 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                         </div>
                     </div>
 
+                    {/* AI Status Badge */}
+                    {(() => {
+                        const isAiScreened = candidate.aiScreened === true || candidate.aiScreened === 'true'
+                        const semanticPct  = candidate.semanticScore != null
+                            ? (candidate.semanticScore * 100).toFixed(0)
+                            : null
+                        return (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                {/* AI Screened / Fallback badge */}
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    padding: '4px 10px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                                    background: isAiScreened ? 'rgba(16,185,129,0.10)' : 'rgba(245,158,11,0.10)',
+                                    color:      isAiScreened ? '#059669'               : '#b45309',
+                                    border: `1px solid ${isAiScreened ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)'}`,
+                                }}>
+                                    <span style={{ fontSize: 9 }}>{isAiScreened ? '🟢' : '⚠️'}</span>
+                                    {isAiScreened ? 'AI Screened' : 'Rule-Based Fallback (AI Offline)'}
+                                </div>
+                                {/* Semantic score pill — only shown when AI was online */}
+                                {isAiScreened && semanticPct !== null && (
+                                    <div style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                                        padding: '4px 10px', borderRadius: 99, fontSize: 11, fontWeight: 700,
+                                        background: 'rgba(99,102,241,0.10)',
+                                        color: '#6366f1',
+                                        border: '1px solid rgba(99,102,241,0.25)',
+                                    }}>
+                                        <Zap size={10} /> Semantic Similarity: {semanticPct}%
+                                    </div>
+                                )}
+                            </div>
+                        )
+                    })()}
+
                     {/* Score metrics */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                         {[
@@ -268,6 +303,7 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                             </div>
                         ))}
                     </div>
+
                 </div>
 
                 {/* Right side: 3D Robot Mascot and Close Button */}
@@ -299,9 +335,33 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                         {/* SUMMARY */}
                         {tab === 'summary' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                {/* AI Offline notice banner */}
+                                {!candidate.aiScreened && (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'flex-start', gap: 10,
+                                        padding: '10px 14px', borderRadius: 10,
+                                        background: 'rgba(245,158,11,0.08)',
+                                        border: '1px solid rgba(245,158,11,0.25)',
+                                    }}>
+                                        <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+                                        <div>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: '#b45309', marginBottom: 3 }}>
+                                                AI Screening Unavailable
+                                            </div>
+                                            <div style={{ fontSize: 11, color: '#92400e', lineHeight: 1.5 }}>
+                                                The AI service (Ollama/LLM) was offline when this candidate was screened.
+                                                The score below is based on <strong>deterministic skill matching only</strong>.
+                                                Semantic similarity and qualitative analysis (Education, Projects, Experience)
+                                                are not available. Re-trigger screening when the AI service is back online.
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 {candidate.structuredSummary && (
                                     <div>
-                                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>AI Summary</div>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                                            {candidate.aiScreened ? 'AI Summary' : 'Rule-Based Summary'}
+                                        </div>
                                         {renderSummary(candidate.structuredSummary)}
                                     </div>
                                 )}

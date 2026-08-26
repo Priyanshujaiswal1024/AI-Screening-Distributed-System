@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ScreeningResult {
     private double matchScore;
+    private double cosineSimilarity;
     private List<String> strengths;
     private List<String> missingSkills;
     private double confidenceScore;
