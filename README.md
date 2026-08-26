@@ -102,140 +102,156 @@ The recruiter UI shows `🟢 AI Screened` or `⚠️ Rule-Based Fallback` accord
 
 ## 🕸️ Complete System Architecture
 
-### Full System Graph — All Services, Kafka Topics & REST Calls
+### Diagram 1 — Service Map (API Gateway → All Services)
 
 ```mermaid
-graph TD
-    Client([🌐 Web Client / Browser]) --> GW
+graph LR
+    Client([🌐 Web Client]) --> GW["🔀 API Gateway\n:8090\nJWT Auth + Routing"]
 
-    GW["🔀 API Gateway\n:8090\nJWT Auth + Routing"]
-
-    subgraph INFRA["⚙️ Core Infrastructure"]
-        Eureka["🔍 Eureka Registry\n:8761\nService Discovery"]
-        Kafka["📨 Apache Kafka\n:9092\nEvent Bus"]
-        PG[("🗄️ PostgreSQL\n+ PgVector\nRelational + Vector DB")]
-        Redis[("⚡ Redis\nCandidate ZSET\nLeaderboard Cache")]
-        S3[("☁️ AWS S3\nResume File\nStorage")]
-        Ollama["🤖 Ollama\nnomic-embed-text\nEmbedding Model"]
-    end
-
-    GW --> Auth["🔐 Auth Service\n:8081"]
+    GW --> Auth["🔐 Auth\n:8081"]
     GW --> User["👤 User Mgmt\n:8082"]
     GW --> Job["📋 Job Desc\n:8083"]
     GW --> RM["📄 Resume Mgmt\n:8084"]
     GW --> AI["🧠 AI Screening\n:8085"]
     GW --> CR["🏆 Candidate Ranking\n:8086"]
     GW --> Chat["💬 Recruiter Chat\n:8087"]
-    GW --> Intv["📅 Interview\nScheduling :8088"]
+    GW --> Intv["📅 Interview\n:8088"]
     GW --> Notif["🔔 Notification\n:8089"]
 
-    Auth -. "JWT token store" .-> Redis
-    User --> PG
-    Job --> PG
-    AI --> PG
-    AI --> Ollama
-    CR --> PG
+    Auth -.-> Redis[("⚡ Redis")]
     CR --> Redis
+    CR --> PG[("🗄️ PostgreSQL\n+ PgVector")]
+    AI --> PG
+    AI --> Ollama["🤖 Ollama\nnomic-embed-text"]
+    RM --> S3[("☁️ AWS S3")]
+    Job --> PG
+    User --> PG
 
-    %% ── Outbox → Kafka publishes ─────────────────────────────────────
-    Auth  -- "📤 auth-events" --> Kafka
-    User  -- "📤 user-events" --> Kafka
-    Job   -- "📤 job-events" --> Kafka
-    RM    -- "📤 resume-uploaded\n(Outbox Poller)" --> Kafka
-    AI    -- "📤 resume-parsed" --> Kafka
-    AI    -- "📤 resume-status-updated\nstatus=FAILED" --> Kafka
-    CR    -- "📤 resume-status-updated\nstatus=SCREENED" --> Kafka
-    RM    -- "📤 resume-deleted" --> Kafka
-    Intv  -- "📤 interview-scheduled" --> Kafka
-    Intv  -- "📤 interview-status-updated" --> Kafka
-    Chat  -- "📤 chat.interaction.completed" --> Kafka
-
-    %% ── Kafka → Consumer subscriptions ──────────────────────────────
-    Kafka -- "▶ resume-uploaded" --> AI
-    Kafka -- "▶ resume-uploaded" --> Notif
-    Kafka -- "▶ resume-parsed" --> CR
-    Kafka -- "▶ resume-parsed" --> RM
-    Kafka -- "▶ resume-parsed" --> Notif
-    Kafka -- "▶ resume-status-updated" --> RM
-    Kafka -- "▶ resume-status-updated" --> Notif
-    Kafka -- "▶ resume-deleted" --> AI
-    Kafka -- "▶ resume-deleted" --> CR
-    Kafka -- "▶ resume-deleted" --> Chat
-    Kafka -- "▶ auth-events" --> User
-    Kafka -- "▶ auth-events" --> Notif
-    Kafka -- "▶ user-events" --> Notif
-    Kafka -- "▶ interview-scheduled" --> Notif
-    Kafka -- "▶ interview-status-updated" --> Notif
-
-    %% ── Internal Feign REST calls ────────────────────────────────────
-    CR -- "GET /internal/jobs/text+skills\nGET /internal/recruiters/jobs" --> Job
-    CR -- "GET /internal/resumes/candidate-info+skills" --> RM
-    CR -- "GET /internal/chunks/text\nPOST /internal/screening/ollama" --> AI
-
-    AI -- "GET /internal/screening-reports/ranked\nGET /internal/screening-reports/score" --> CR
-    AI -- "GET /internal/jobs/text+skills+details" --> Job
-    AI -- "GET /internal/resumes/candidate-info+search" --> RM
-
-    Chat -- "GET /internal/chunks\nGET /internal/chunks/all" --> AI
-    Chat -- "GET /internal/screening-reports/ranked\nGET /internal/screening-reports/resumeId" --> CR
-    Chat -- "GET /internal/jobs/details" --> Job
-    Chat -- "GET /internal/resumes/candidate-info+search" --> RM
-
-    RM -- "Upload PDF" --> S3
-
-    %% ── Styles ───────────────────────────────────────────────────────
-    classDef gateway fill:#4f46e5,stroke:#6366f1,color:#fff,font-weight:bold
-    classDef service fill:#1e293b,stroke:#334155,color:#e2e8f0
-    classDef infra fill:#0f172a,stroke:#1e3a5f,color:#94a3b8
-    classDef kafka fill:#92400e,stroke:#b45309,color:#fef3c7
-    classDef client fill:#065f46,stroke:#10b981,color:#d1fae5
-
-    class GW gateway
-    class Auth,User,Job,RM,AI,CR,Chat,Intv,Notif service
-    class Eureka,PG,Redis,S3,Ollama,Kafka infra
-    class Client client
-```
-
-### Part 1 — API Gateway → All Services
-
-```mermaid
-graph TD
-    Client([🌐 Web Client]) --> GW
-
-    GW["🔀 API Gateway :8090
-    Routes all external traffic
-    JWT Auth validated on every request"]
-
-    GW --> Auth["🔐 Auth Service
-    :8081"]
-    GW --> User["👤 User Mgmt
-    :8082"]
-    GW --> Job["📋 Job Desc Service
-    :8083"]
-    GW --> RM["📄 Resume Mgmt
-    :8084"]
-    GW --> AI["🧠 AI Screening
-    :8085"]
-    GW --> CR["🏆 Candidate Ranking
-    :8086"]
-    GW --> Chat["💬 Recruiter Chat
-    :8087"]
-    GW --> Intv["📅 Interview Scheduling
-    :8088"]
-    GW --> Notif["🔔 Notification
-    :8089"]
-
-    classDef gateway fill:#4f46e5,stroke:#818cf8,color:#fff,font-weight:bold
-    classDef service fill:#1e293b,stroke:#475569,color:#e2e8f0
+    classDef gw     fill:#4f46e5,stroke:#818cf8,color:#fff,font-weight:bold
+    classDef svc    fill:#0f172a,stroke:#334155,color:#e2e8f0
+    classDef infra  fill:#1e293b,stroke:#475569,color:#94a3b8
     classDef client fill:#064e3b,stroke:#10b981,color:#d1fae5
 
-    class GW gateway
-    class Auth,User,Job,RM,AI,CR,Chat,Intv,Notif service
+    class GW gw
+    class Auth,User,Job,RM,AI,CR,Chat,Intv,Notif svc
+    class Redis,PG,Ollama,S3 infra
     class Client client
 ```
 
 ---
 
+### Diagram 2 — Kafka Event Bus (All Topics: Publishers → Consumers)
+
+```mermaid
+graph LR
+    subgraph PUB["📤 Publishers"]
+        Auth["🔐 Auth Service"]
+        User["👤 User Mgmt"]
+        Job["📋 Job Desc"]
+        RM["📄 Resume Mgmt\n(Outbox Poller)"]
+        AI["🧠 AI Screening"]
+        CR["🏆 Candidate Ranking"]
+        Chat["💬 Recruiter Chat"]
+        Intv["📅 Interview Service"]
+    end
+
+    subgraph KAFKA["📨 Apache Kafka :9092"]
+        T1["auth-events"]
+        T2["user-events"]
+        T3["job-events"]
+        T4["resume-uploaded"]
+        T5["resume-parsed"]
+        T6["resume-status-updated"]
+        T7["resume-deleted"]
+        T8["interview-scheduled"]
+        T9["interview-status-updated"]
+        T10["chat.interaction.completed"]
+    end
+
+    subgraph CON["▶ Consumers"]
+        UserC["👤 User Mgmt"]
+        NotifC["🔔 Notification"]
+        AIC["🧠 AI Screening"]
+        CRC["🏆 Candidate Ranking"]
+        RMC["📄 Resume Mgmt"]
+        ChatC["💬 Recruiter Chat"]
+    end
+
+    Auth  --> T1
+    User  --> T2
+    Job   --> T3
+    RM    --> T4
+    RM    --> T7
+    AI    --> T5
+    AI    --> T6
+    CR    --> T6
+    Chat  --> T10
+    Intv  --> T8
+    Intv  --> T9
+
+    T1 --> UserC
+    T1 --> NotifC
+    T2 --> NotifC
+    T4 --> AIC
+    T4 --> NotifC
+    T5 --> CRC
+    T5 --> RMC
+    T5 --> NotifC
+    T6 --> RMC
+    T6 --> NotifC
+    T7 --> AIC
+    T7 --> CRC
+    T7 --> ChatC
+    T8 --> NotifC
+    T9 --> NotifC
+
+    classDef pub   fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe
+    classDef topic fill:#78350f,stroke:#d97706,color:#fef3c7
+    classDef con   fill:#14532d,stroke:#16a34a,color:#bbf7d0
+
+    class Auth,User,Job,RM,AI,CR,Chat,Intv pub
+    class T1,T2,T3,T4,T5,T6,T7,T8,T9,T10 topic
+    class UserC,NotifC,AIC,CRC,RMC,ChatC con
+```
+
+---
+
+### Diagram 3 — Internal Feign REST Calls (Service → Service)
+
+```mermaid
+graph LR
+    CR["🏆 Candidate\nRanking :8086"]
+    AI["🧠 AI Screening\n:8085"]
+    Chat["💬 Recruiter\nChat :8087"]
+    Job["📋 Job Desc\n:8083"]
+    RM["📄 Resume Mgmt\n:8084"]
+
+    CR -- "GET /jobs/{id}/text\nGET /jobs/{id}/skills" --> Job
+    CR -- "GET /resumes/{id}/candidate-info\nGET /resumes/{id}/skills" --> RM
+    CR -- "GET /chunks/{id}/text" --> AI
+    CR -- "POST /screening/ollama\n(resumeText + jdText)" --> AI
+
+    AI -- "GET /screening-reports/ranked\nGET /screening-reports/score" --> CR
+    AI -- "GET /jobs/{id}/details" --> Job
+    AI -- "GET /resumes/{id}/candidate-info" --> RM
+
+    Chat -- "GET /chunks/{resumeId}\nGET /chunks/all" --> AI
+    Chat -- "GET /screening-reports/ranked\nGET /screening-reports/{resumeId}" --> CR
+    Chat -- "GET /jobs/{id}/details" --> Job
+    Chat -- "GET /resumes/{id}/candidate-info" --> RM
+
+    classDef ranking fill:#4338ca,stroke:#818cf8,color:#e0e7ff
+    classDef aiscr   fill:#7c2d12,stroke:#f97316,color:#fed7aa
+    classDef chat    fill:#134e4a,stroke:#2dd4bf,color:#ccfbf1
+    classDef job     fill:#1e3a5f,stroke:#3b82f6,color:#bfdbfe
+    classDef resume  fill:#1e293b,stroke:#64748b,color:#e2e8f0
+
+    class CR ranking
+    class AI aiscr
+    class Chat chat
+    class Job job
+    class RM resume
+```
 
 
 ### Part 2 — Internal Feign REST Calls (Service → Service)
