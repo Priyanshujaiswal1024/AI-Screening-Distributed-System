@@ -11,18 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * Auto-Cancel Scheduler
- *
- * Rule: If a candidate does NOT confirm/reschedule within 5 days of invite,
- *       status → NO_RESPONSE and recruiter gets a Kafka notification email.
- *
- * Runs every 12 hours (can be tuned via cron).
- *
- * Day 0 → Invite sent   (PENDING)
- * Day 3 → Reminder email sent to candidate  (still PENDING)
- * Day 5 → No reply → status = NO_RESPONSE  → recruiter notified
- */
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
