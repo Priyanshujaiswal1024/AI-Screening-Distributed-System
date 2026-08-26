@@ -100,46 +100,241 @@ The recruiter UI shows `🟢 AI Screened` or `⚠️ Rule-Based Fallback` accord
 
 ---
 
-## 🕸️ High-Level Architecture Flow
+## 🕸️ Complete System Architecture
+
+### Part 1 — Service Communication Map (All REST Endpoints)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                           API GATEWAY  :8090                                      │
+│  Routes all external traffic. Auth validated via JWT on every request.           │
+└────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┘
+     │          │          │          │          │          │          │
+     ▼          ▼          ▼          ▼          ▼          ▼          ▼
+  Auth      User Mgmt   Job Desc  Resume    AI Screen  Candidate  Recruiter
+ :8081      :8082       :8083     Mgmt:8084  :8085      Rank:8086  Chat:8087
+```
+
+---
+
+### Part 2 — Internal Feign REST Calls (Service → Service)
+
+```
+candidate-ranking-service
+   ├── → job-description-service
+   │      GET /internal/jobs/{jobId}/text              ← fetch full JD text
+   │      GET /internal/jobs/{jobId}/skills            ← fetch required skills list
+   │      GET /internal/recruiters/{recruiterId}/jobs  ← get all jobs for recruiter
+   │
+   ├── → resume-management-service
+   │      GET /internal/resumes/{id}/candidate-info    ← name, email
+   │      GET /internal/resumes/{id}/skills            ← candidate's skill list
+   │
+   └── → ai-screening-service
+          GET  /internal/chunks/{resumeId}/text        ← resume text chunks (for skill math)
+          POST /internal/screening/ollama              ← LLM analysis + cosine similarity
+
+ai-screening-service (LLM Tools)
+   ├── → candidate-ranking-service
+   │      GET /internal/screening-reports/ranked?jobDescriptionId=&minScore=&topN=
+   │      GET /internal/screening-reports/score?resumeId=&jobDescriptionId=
+   │      GET /internal/screening-reports/{resumeId}?jobDescriptionId=
+   │
+   ├── → job-description-service
+   │      GET /internal/jobs/{id}/text
+   │      GET /internal/jobs/{id}/skills
+   │      GET /internal/jobs/{id}/details
+   │
+   └── → resume-management-service
+          GET /internal/resumes/{id}/candidate-info
+          GET /internal/resumes/{id}/metadata
+          GET /internal/resumes/search?skillKeyword=&candidateName=&status=&limit=
+
+recruiter-chat-service
+   ├── → ai-screening-service
+   │      GET /internal/chunks/{resumeId}              ← full ChunkDto for RAG
+   │      GET /internal/chunks/all                     ← all chunks (keyword fallback)
+   │
+   ├── → candidate-ranking-service
+   │      GET /internal/screening-reports/ranked?jobDescriptionId=&minScore=&topN=
+   │      GET /internal/screening-reports/{resumeId}?jobDescriptionId=
+   │
+   ├── → job-description-service
+   │      GET /internal/jobs/{id}
+   │      GET /internal/jobs/{id}/details
+   │
+   └── → resume-management-service
+          GET /internal/resumes/{id}/candidate-info
+          GET /internal/resumes/search?skillKeyword=&candidateName=&status=&limit=
+```
+
+---
+
+### Part 3 — Kafka Event Bus (All Topics)
+
+```
+TOPIC: auth-events
+  Publisher  : authentication-service  (on login / token issued)
+  Consumers  : user-management-service (sync user profile)
+               notification-service    (send welcome email)
+
+TOPIC: user-events
+  Publisher  : user-management-service (on recruiter/candidate profile update)
+  Consumers  : notification-service    (send profile update notification)
+
+TOPIC: job-events
+  Publisher  : job-description-service (on job posted / updated)
+  Consumers  : (notification-service — future)
+
+TOPIC: resume-uploaded
+  Publisher  : resume-management-service (via Outbox Poller — transactional)
+  Consumers  : ai-screening-service      (parse PDF, chunk, embed, store vectors)
+               notification-service      (notify recruiter: "Resume received")
+
+TOPIC: resume-parsed
+  Publisher  : ai-screening-service      (after chunking + PgVector indexing)
+  Consumers  : candidate-ranking-service (trigger hybrid scoring for all recruiter jobs)
+               notification-service      (notify: "Resume processing complete")
+               resume-management-service (update resume status to PARSED)
+
+TOPIC: resume-status-updated
+  Publisher  : candidate-ranking-service (status = SCREENED after scoring)
+               ai-screening-service      (status = FAILED on parse error)
+  Consumers  : resume-management-service (update resume.status in DB)
+               notification-service      (notify candidate: "Your resume was screened")
+
+TOPIC: resume-deleted
+  Publisher  : resume-management-service (on resume delete request)
+  Consumers  : ai-screening-service      (delete resume chunks + PgVector embeddings)
+               candidate-ranking-service (delete screening_reports for this resume)
+               recruiter-chat-service    (evict from chat context cache)
+
+TOPIC: interview-scheduled
+  Publisher  : interview-scheduling-service
+  Consumers  : notification-service (send calendar invite email to recruiter + candidate)
+
+TOPIC: interview-status-updated
+  Publisher  : interview-scheduling-service (on accept / reject / auto-expire)
+  Consumers  : notification-service (send status change email)
+
+TOPIC: chat.interaction.completed
+  Publisher  : recruiter-chat-service (on every chatbot answer)
+  Consumers  : (analytics / future observability pipeline)
+```
+
+---
+
+### Part 4 — End-to-End Resume Screening Flow
 
 ```mermaid
-graph TD
-    Client[Web Client] --> Gateway[API Gateway :8090]
-    
-    subgraph Core Infrastructure
-        Eureka[Eureka Registry :8761]
-        Kafka[Apache Kafka :9092]
-        DB[(PostgreSQL / PgVector)]
-        Redis[(Redis Cache)]
-        S3[(AWS S3 Storage)]
-    end
-    
-    Gateway --> Auth[Auth Service]
-    Gateway --> User[User Service]
-    Gateway --> Job[Job Service]
-    Gateway --> Resume[Resume Service]
-    Gateway --> AI[AI Screening Service]
-    Gateway --> Rank[Candidate Ranking Service]
-    Gateway --> Chat[Recruiter Chat Service]
-    Gateway --> Interview[Interview Service]
-    Gateway --> Notif[Notification Service]
-    
-    Auth -.-> Redis
-    User -.-> DB
-    Resume -.-> S3
-    
-    %% Saga Event Flow
-    Resume -- "resume-uploaded" --> Kafka
-    Kafka -- "Consume" --> AI
-    AI -- "resume-parsed" --> Kafka
-    Kafka -- "Consume" --> Rank
-    Rank -- "resume-status-updated (SCREENED)" --> Kafka
-    Kafka -- "Consume" --> Notif
+sequenceDiagram
+    participant C as Candidate/Browser
+    participant GW as API Gateway :8090
+    participant RM as Resume Mgmt :8084
+    participant K as Apache Kafka
+    participant AI as AI Screening :8085
+    participant OL as Ollama (nomic-embed)
+    participant PG as PgVector DB
+    participant CR as Candidate Ranking :8086
+    participant JD as Job Desc :8083
+    participant RD as Redis (ZSET)
+    participant NT as Notification :8088
 
-    %% Hybrid Scoring Internal Calls
-    Rank -- "GET /internal/chunks/{id}/text" --> AI
-    Rank -- "POST /internal/screening/ollama" --> AI
+    C->>GW: POST /resumes/upload (PDF)
+    GW->>RM: forward upload
+    RM->>RM: Save file to AWS S3
+    RM->>RM: Write outbox record (Transactional)
+    RM->>K: publish resume-uploaded {resumeId, recruiterId, jobId}
+
+    K->>AI: consume resume-uploaded
+    AI->>AI: Apache Tika — extract plain text from PDF
+    AI->>AI: Split text into semantic chunks
+    AI->>OL: embed each chunk → float[768] vectors
+    OL-->>AI: chunk vectors
+    AI->>PG: store chunk vectors (COSINE_DISTANCE index)
+    AI->>K: publish resume-parsed {resumeId, recruiterId, jobId}
+    AI->>K: publish resume-status-updated {status=PARSED}
+
+    K->>NT: consume resume-parsed → send "Processing complete" email
+    K->>RM: consume resume-status-updated → update resume.status=PARSED
+
+    K->>CR: consume resume-parsed
+    CR->>JD: GET /internal/jobs/{jobId}/text
+    JD-->>CR: JD text
+    CR->>JD: GET /internal/jobs/{jobId}/skills
+    JD-->>CR: required skills list
+    CR->>RM: GET /internal/resumes/{resumeId}/candidate-info
+    RM-->>CR: name, email
+    CR->>RM: GET /internal/resumes/{resumeId}/skills
+    RM-->>CR: candidate skill list
+    CR->>AI: GET /internal/chunks/{resumeId}/text
+    AI-->>CR: resume text chunks
+
+    Note over CR: Java SkillNormalizerService<br/>calculatedSkillScore = matched/total × 100
+
+    CR->>AI: POST /internal/screening/ollama {resumeText, jobDescription}
+
+    Note over AI: LLM (Groq/Ollama) analyzes resume<br/>→ Education, Experience, Projects sections
+    AI->>OL: embed(jdText) → jdVector
+    AI->>OL: embed(resumeText) → resumeVector
+    OL-->>AI: float[768] vectors
+    Note over AI: cosineSimilarity = dot(A,B)/(|A|×|B|)
+
+    AI-->>CR: {cosineSimilarity:0.88, confidenceScore:0.90, education:{...}, ...}
+
+    Note over CR: hybridScore = (0.70 × skillMath) + (0.30 × 0.88 × 100)<br/>aiScreened=true, semanticScore=0.88
+
+    CR->>CR: Save ScreeningReport to PostgreSQL
+    CR->>RD: ZADD jd:ranking:{jobId} hybridScore resumeId
+    CR->>K: publish resume-status-updated {status=SCREENED}
+
+    K->>NT: consume resume-status-updated → send "Screened" email to candidate
+    K->>RM: consume resume-status-updated → update resume.status=SCREENED
 ```
+
+---
+
+### Part 5 — RAG Chatbot Pipeline (Recruiter Chat)
+
+```mermaid
+sequenceDiagram
+    participant R as Recruiter
+    participant GW as API Gateway
+    participant CH as Recruiter Chat :8087
+    participant AI as AI Screening :8085
+    participant CR as Candidate Ranking :8086
+    participant JD as Job Desc :8083
+    participant PG as PgVector DB
+    participant RR as Re-ranker (Cosine)
+    participant LLM as Groq API (LLaMA3)
+
+    R->>GW: POST /chat/message {jobId, resumeId, message}
+    GW->>CH: forward
+
+    CH->>AI: GET /internal/chunks/{resumeId}
+    AI-->>CH: List<ChunkDto> (resume chunks with embeddings)
+
+    CH->>CR: GET /internal/screening-reports/{resumeId}?jobDescriptionId=
+    CR-->>CH: screening report (score, summary, gaps)
+
+    CH->>JD: GET /internal/jobs/{jobId}/details
+    JD-->>CH: job title, description, required skills
+
+    CH->>PG: VectorStore similarity search (COSINE_DISTANCE, Top-K=5)
+    PG-->>CH: top 5 semantically relevant chunks
+
+    CH->>RR: Re-rank chunks by cosine(queryEmb, chunkEmb)
+    RR-->>CH: top 3 highest-scoring chunks
+
+    Note over CH: Build prompt:<br/>System: screening report + job details<br/>Context: top 3 RAG chunks<br/>User: recruiter question
+
+    CH->>LLM: stream prompt to Groq API
+    LLM-->>CH: streaming answer tokens
+    CH-->>R: "Priyanshu has strong Java experience but lacks Kafka..."
+    CH->>K: publish chat.interaction.completed
+```
+
+
 
 ---
 
