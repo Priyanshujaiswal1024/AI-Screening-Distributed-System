@@ -38,6 +38,7 @@ This project is engineered using industry-standard backend design patterns to en
 - **Resiliency & Circuit Breaker (Resilience4j):** Prevents cascading failures. If the AI service (Groq/Ollama) is down, the Circuit Breaker opens and the system gracefully falls back to pure deterministic skill-math scoring — **zero downtime, zero data loss**.
 - **API Gateway & Service Discovery:** Decouples the frontend from backend complexities. Eureka dynamically tracks IP and ports of all scaling microservice instances.
 - **Retrieval-Augmented Generation (RAG):** Enhances LLM capabilities by injecting private document context fetched via cosine similarity search from a `PgVector` database.
+- **Two-Tier Resilient Storage (AWS S3 + Local Fallback):** Uploaded resumes default to **AWS S3** (`talent-intelligence-resumes-2026`) for virtually infinite 11 9's durability. If AWS S3 encounters network partitions or downtime, the system automatically falls back to **local resilient storage (`/tmp/talent_resumes`)** and emits fallback streaming URLs (`/raw-file/{id}`) to Kafka, ensuring the AI screening pipeline never fails or loses a candidate's resume.
 - **Single Responsibility + Domain-Driven Design:** Each service owns exactly one domain. `ai-screening-service` owns all heavy AI/embedding tasks. `candidate-ranking-service` owns all business scoring and leaderboard logic.
 
 ---
