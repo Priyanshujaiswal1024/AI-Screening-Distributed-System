@@ -18,6 +18,7 @@ import { useAuthStore } from '../../../shared/store/authStore'
 import { useRobotStore } from '../../../shared/store/robotStore'
 import FuturisticRobot3D from '../../../shared/components/robot/FuturisticRobot3D'
 import Pagination from '../../../shared/components/Pagination'
+import AiRateLimitCountdown from '../../../shared/components/AiRateLimitCountdown'
 
 // Helper to format experience into clean human-readable "X Years Y Months" (e.g. 2.83 -> "2 Years 10 Months")
 export const formatExperience = (exp) => {
@@ -1631,24 +1632,17 @@ export default function ResumesPage() {
                                                             msg.text.includes('Rate Limit') ||
                                                             msg.text.includes('limit reached') ||
                                                             msg.text.includes('rate_limit_exceeded') ||
-                                                            msg.text.includes('I encountered an error')
+                                                            msg.text.includes('I encountered an error') ||
+                                                            msg.text.includes('service unavailable')
                                                         )
                                                         if (isRateLimit) {
+                                                            const prevPrompt = chatMessages.slice(0, i).reverse().find(m => m.role === 'user')?.text || chatInput
                                                             return (
-                                                                <div style={{
-                                                                    background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08))',
-                                                                    border: '1px solid rgba(245,158,11,0.3)',
-                                                                    borderRadius: 12, padding: '10px 12px', color: '#f59e0b',
-                                                                    boxShadow: '0 4px 16px rgba(245,158,11,0.15)', fontSize: 11.5
-                                                                }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, color: '#fbbf24', marginBottom: 3 }}>
-                                                                        <AlertCircle size={13} />
-                                                                        <span>Groq AI Limit Notice</span>
-                                                                    </div>
-                                                                    <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                                                                        AI limit reached. Please wait <strong>15–30 seconds</strong> and try again.
-                                                                    </p>
-                                                                </div>
+                                                                <AiRateLimitCountdown 
+                                                                    compact={true}
+                                                                    initialSeconds={12}
+                                                                    onRetry={prevPrompt ? () => sendResumeChatMessage(prevPrompt) : null}
+                                                                />
                                                             )
                                                         }
                                                         return (
@@ -1936,24 +1930,17 @@ export default function ResumesPage() {
                                                     msg.text.includes('Rate Limit') ||
                                                     msg.text.includes('limit reached') ||
                                                     msg.text.includes('rate_limit_exceeded') ||
-                                                    msg.text.includes('I encountered an error')
+                                                    msg.text.includes('I encountered an error') ||
+                                                    msg.text.includes('service unavailable')
                                                 )
                                                 if (isRateLimit) {
+                                                    const prevPrompt = pipelineMessages.slice(0, i).reverse().find(m => m.role === 'user')?.text || pipelineInput
                                                     return (
-                                                        <div style={{
-                                                            background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08))',
-                                                            border: '1px solid rgba(245,158,11,0.3)',
-                                                            borderRadius: 12, padding: '10px 12px', color: '#f59e0b',
-                                                            boxShadow: '0 4px 16px rgba(245,158,11,0.15)', fontSize: 11.5
-                                                        }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, color: '#fbbf24', marginBottom: 3 }}>
-                                                                <AlertCircle size={13} />
-                                                                <span>Groq AI Limit Notice</span>
-                                                            </div>
-                                                            <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                                                                AI limit reached. Please wait <strong>15–30 seconds</strong> and try again.
-                                                            </p>
-                                                        </div>
+                                                        <AiRateLimitCountdown 
+                                                            compact={true}
+                                                            initialSeconds={12}
+                                                            onRetry={prevPrompt ? () => sendPipelineChatMessage(prevPrompt) : null}
+                                                        />
                                                     )
                                                 }
                                                 return (

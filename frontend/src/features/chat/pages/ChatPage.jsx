@@ -15,6 +15,7 @@ import { rankingApi } from '../../ranking/api/rankingApi'
 import { useAuthStore } from '../../../shared/store/authStore'
 import { useRobotStore } from '../../../shared/store/robotStore'
 import FuturisticRobot3D from '../../../shared/components/robot/FuturisticRobot3D'
+import AiRateLimitCountdown from '../../../shared/components/AiRateLimitCountdown'
 
 /* ── Typing animation ── */
 function TypingDots() {
@@ -514,41 +515,49 @@ export default function ChatPage() {
                                 </div>
                             )}
 
-                            <div 
-                                className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} 
-                                style={
-                                    msg.role === 'ai' 
-                                        ? msg.text?.includes('Rate Limit Reached')
-                                            ? { 
-                                                display: 'flex', 
-                                                flexDirection: 'column', 
-                                                gap: '0.5rem',
-                                                background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(244,63,94,0.05))',
-                                                border: '1px solid rgba(245,158,11,0.3)',
-                                                borderRadius: 12,
-                                                padding: '12px 16px',
-                                                boxShadow: '0 4px 12px rgba(245,158,11,0.08)'
-                                              }
-                                            : { display: 'flex', flexDirection: 'column', gap: '0.5rem' } 
-                                        : {}
+                            {(() => {
+                                const isRateLimit = msg.role === 'ai' && (
+                                    msg.isRateLimit ||
+                                    msg.text?.includes('Rate Limit') ||
+                                    msg.text?.includes('limit reached') ||
+                                    msg.text?.includes('rate_limit_exceeded') ||
+                                    msg.text?.includes('I encountered an error') ||
+                                    msg.text?.includes('service unavailable')
+                                )
+
+                                if (isRateLimit) {
+                                    const prevUserMessage = messages.slice(0, i).reverse().find(m => m.role === 'user')?.text || input
+                                    return (
+                                        <AiRateLimitCountdown 
+                                            initialSeconds={12}
+                                            onRetry={prevUserMessage ? () => send(null, prevUserMessage) : null}
+                                        />
+                                    )
                                 }
-                            >
-                                {msg.role === 'ai' ? (
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-                                        p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
-                                        ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                        ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                        li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
-                                        h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
-                                        h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
-                                        h3: ({node, ...props}) => <h3 style={{ margin: '4px 0', fontSize: '1.05em', fontWeight: 'bold', color: msg.text?.includes('Rate Limit') ? '#f59e0b' : 'inherit' }} {...props} />
-                                    }}>
-                                        {msg.text}
-                                    </ReactMarkdown>
-                                ) : (
-                                    msg.text
-                                )}
-                            </div>
+
+                                return (
+                                    <div 
+                                        className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'} 
+                                        style={msg.role === 'ai' ? { display: 'flex', flexDirection: 'column', gap: '0.5rem' } : {}}
+                                    >
+                                        {msg.role === 'ai' ? (
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                h3: ({node, ...props}) => <h3 style={{ margin: '4px 0', fontSize: '1.05em', fontWeight: 'bold' }} {...props} />
+                                            }}>
+                                                {msg.text}
+                                            </ReactMarkdown>
+                                        ) : (
+                                            msg.text
+                                        )}
+                                    </div>
+                                )
+                            })()}
                             <span style={{ fontSize: 10, color: 'var(--text-faint)', marginTop: 1 }}>
                                 {msg.ts ? format(new Date(msg.ts), 'HH:mm') : ''}
                             </span>

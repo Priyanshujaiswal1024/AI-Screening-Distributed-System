@@ -11,6 +11,7 @@ import RobotSVG from './RobotSVG'
 import { cn } from '../../utils/cn'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import AiRateLimitCountdown from '../AiRateLimitCountdown'
 
 function TypingDots() {
     return (
@@ -241,54 +242,43 @@ export default function FloatingRobot() {
                                     return (
                                         <div key={i} className={cn('flex flex-col', msg.role === 'user' ? 'items-end' : 'items-start')}>
                                             <div className="flex items-end gap-1.5" style={{ flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', maxWidth: '85%' }}>
-                                                <div
-                                                    className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}
-                                                    style={
-                                                        isRateLimit ? {
-                                                            background: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(239,68,68,0.08))',
-                                                            border: '1px solid rgba(245,158,11,0.3)',
-                                                            borderRadius: 14,
-                                                            padding: '10px 14px',
-                                                            color: '#f59e0b',
-                                                            boxShadow: '0 4px 16px rgba(245,158,11,0.15)',
-                                                            display: 'flex', flexDirection: 'column', gap: '0.4rem'
-                                                        } : msg.role === 'ai' ? {
-                                                            display: 'flex', flexDirection: 'column', gap: '0.5rem'
-                                                        } : {
+                                                {isRateLimit ? (
+                                                    <AiRateLimitCountdown
+                                                        compact={true}
+                                                        initialSeconds={12}
+                                                        onRetry={() => {
+                                                            const prevUserPrompt = messages.slice(0, i).reverse().find(m => m.role === 'user')?.text || input
+                                                            if (prevUserPrompt) send(null, prevUserPrompt)
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div
+                                                        className={msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}
+                                                        style={msg.role === 'ai' ? { display: 'flex', flexDirection: 'column', gap: '0.5rem' } : {
                                                             display: 'inline-block',
                                                             width: 'auto',
                                                             minWidth: 'fit-content',
                                                             whiteSpace: 'pre-wrap',
                                                             wordBreak: 'normal'
-                                                        }
-                                                    }
-                                                >
-                                                    {isRateLimit ? (
-                                                        <div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 12, color: '#fbbf24', marginBottom: 4 }}>
-                                                                <AlertCircle size={14} />
-                                                                <span>Groq AI Limit Notice</span>
-                                                            </div>
-                                                            <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.45 }}>
-                                                                AI limit reached. Please wait <strong>15–30 seconds</strong> and ask again.
-                                                            </p>
-                                                        </div>
-                                                    ) : msg.role === 'ai' ? (
-                                                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-                                                            p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
-                                                            ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                            ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
-                                                            li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
-                                                            h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
-                                                            h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
-                                                            h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
-                                                        }}>
-                                                            {msg.text}
-                                                        </ReactMarkdown>
-                                                    ) : (
-                                                        msg.text
-                                                    )}
-                                                </div>
+                                                        }}
+                                                    >
+                                                        {msg.role === 'ai' ? (
+                                                            <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+                                                                p: ({node, ...props}) => <p style={{ margin: 0, padding: 0 }} {...props} />,
+                                                                ul: ({node, ...props}) => <ul style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                ol: ({node, ...props}) => <ol style={{ margin: 0, paddingLeft: 20 }} {...props} />,
+                                                                li: ({node, ...props}) => <li style={{ margin: '4px 0' }} {...props} />,
+                                                                h1: ({node, ...props}) => <h1 style={{ margin: '8px 0', fontSize: '1.2em', fontWeight: 'bold' }} {...props} />,
+                                                                h2: ({node, ...props}) => <h2 style={{ margin: '8px 0', fontSize: '1.1em', fontWeight: 'bold' }} {...props} />,
+                                                                h3: ({node, ...props}) => <h3 style={{ margin: '8px 0', fontSize: '1em', fontWeight: 'bold' }} {...props} />
+                                                            }}>
+                                                                {msg.text}
+                                                            </ReactMarkdown>
+                                                        ) : (
+                                                            msg.text
+                                                        )}
+                                                    </div>
+                                                )}
                                             {msg.role === 'user' && (
                                                 <button
                                                     type="button"
