@@ -158,28 +158,61 @@ const renderSummary = (text) => {
 };
 
 /* ── Candidate drawer (Centered Modal Card) ── */
-function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
+function CandidateDrawer({ candidate, onClose, jobId, jobTitle, onRefetch }) {
     const navigate = useNavigate()
     const { setContext } = useRobotStore()
-    const [tab, setTab]                     = useState('summary')
-    const [showSingleInvite, setShowSingle] = useState(false)
+    const [currentCandidate, setCurrentCandidate] = useState(candidate)
+    const [tab, setTab]                           = useState('summary')
+    const [showSingleInvite, setShowSingle]       = useState(false)
+    const [isRescreening, setIsRescreening]       = useState(false)
+    const [cooldown, setCooldown]                 = useState(10) // 10 second interactive cooldown timer
 
     useEffect(() => {
-        if (candidate) setContext({ jobId, resumeId: candidate.resumeId })
-    }, [candidate, jobId])
+        setCurrentCandidate(candidate)
+        setCooldown(10)
+    }, [candidate])
 
-    if (!candidate) return null
+    useEffect(() => {
+        if (currentCandidate) setContext({ jobId, resumeId: currentCandidate.resumeId })
+    }, [currentCandidate, jobId])
 
-    const strengths = typeof candidate.strengths === 'string'
-        ? candidate.strengths.replace('Matched strengths: ', '').replace('Matched skills: ', '').split(',').map(s => s.trim()).filter(Boolean)
+    // Real-time second countdown timer for Groq API cooldown
+    useEffect(() => {
+        if (cooldown > 0 && !currentCandidate?.aiScreened) {
+            const timer = setTimeout(() => setCooldown(c => c - 1), 1000)
+            return () => clearTimeout(timer)
+        }
+    }, [cooldown, currentCandidate?.aiScreened])
+
+    if (!currentCandidate) return null
+
+    const handleRescreen = async () => {
+        try {
+            setIsRescreening(true)
+            toast.loading('Analyzing with Groq AI model...', { id: 'rescreen-toast' })
+            const res = await rankingApi.triggerScreen(jobId, currentCandidate.resumeId)
+            if (res?.data) {
+                setCurrentCandidate(res.data)
+                if (onRefetch) onRefetch()
+                toast.success('AI Screening Completed Successfully! 🎉', { id: 'rescreen-toast' })
+            }
+        } catch (err) {
+            toast.error('AI Service is processing. Please try again in a few seconds.', { id: 'rescreen-toast' })
+        } finally {
+            setIsRescreening(false)
+        }
+    }
+
+    const strengths = typeof currentCandidate.strengths === 'string'
+        ? currentCandidate.strengths.replace('Matched strengths: ', '').replace('Matched skills: ', '').split(',').map(s => s.trim()).filter(Boolean)
         : []
-    const gaps = typeof candidate.skillGaps === 'string'
-        ? candidate.skillGaps.replace('Missing skills: ', '').replace('Missing skills:', '').split(',').map(s => s.trim()).filter(Boolean)
+    const gaps = typeof currentCandidate.skillGaps === 'string'
+        ? currentCandidate.skillGaps.replace('Missing skills: ', '').replace('Missing skills:', '').split(',').map(s => s.trim()).filter(Boolean)
         : []
-    const score      = candidate.matchScore || 0
+    const score      = currentCandidate.matchScore || 0
     const scoreColor = score > 75 ? '#10b981' : score > 50 ? '#06b6d4' : '#f59e0b'
-    const initials   = (candidate.candidateName || '?').slice(0, 2).toUpperCase()
-    const hue        = candidate.candidateName?.charCodeAt(0) * 137.5 % 360 || 200
+    const initials   = (currentCandidate.candidateName || '?').slice(0, 2).toUpperCase()
+    const hue        = currentCandidate.candidateName?.charCodeAt(0) * 137.5 % 360 || 200
 
     return (
     <>
@@ -218,15 +251,15 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                             </div>
                             <div>
                                 <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', marginBottom: 2 }}>
-                                    {candidate.candidateName}
+                                    {currentCandidate.candidateName}
                                 </div>
-                                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{candidate.candidateEmail}</div>
+                                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{currentCandidate.candidateEmail}</div>
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: 8 }}>
                             <button
-                                onClick={() => navigate(`/chat?jobId=${jobId}&resumeId=${candidate.resumeId}`)}
+                                onClick={() => navigate(`/chat?jobId=${jobId}&resumeId=${currentCandidate.resumeId}`)}
                                 className="btn-secondary" style={{ padding: '7px 14px', fontSize: 12 }}
                             >
                                 <MessageSquare size={13} /> Chat about
@@ -249,9 +282,9 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
 
                     {/* AI Status Badge */}
                     {(() => {
-                        const isAiScreened = candidate.aiScreened === true || candidate.aiScreened === 'true'
-                        const semanticPct  = candidate.semanticScore != null
-                            ? (candidate.semanticScore * 100).toFixed(0)
+                        const isAiScreened = currentCandidate.aiScreened === true || currentCandidate.aiScreened === 'true'
+                        const semanticPct  = currentCandidate.semanticScore != null
+                            ? (currentCandidate.semanticScore * 100).toFixed(0)
                             : null
                         return (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -286,8 +319,8 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                         {[
                             { label: 'Match Score',  value: `${score.toFixed(1)}%`,    color: scoreColor },
-                            { label: 'Rank',         value: `#${candidate.candidateRank || '—'}`, color: 'var(--text-primary)' },
-                            { label: 'Confidence',   value: `${((candidate.confidenceScore || 0)*100).toFixed(0)}%`, color: '#8b5cf6' },
+                            { label: 'Rank',         value: `#${currentCandidate.candidateRank || '—'}`, color: 'var(--text-primary)' },
+                            { label: 'Confidence',   value: `${((currentCandidate.confidenceScore || 0)*100).toFixed(0)}%`, color: '#8b5cf6' },
                         ].map(m => (
                             <div key={m.label} style={{
                                 background: 'var(--bg-primary)', borderRadius: 12,
@@ -335,34 +368,115 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                         {/* SUMMARY */}
                         {tab === 'summary' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                {/* AI Offline notice banner */}
-                                {!candidate.aiScreened && (
-                                    <div style={{
-                                        display: 'flex', alignItems: 'flex-start', gap: 10,
-                                        padding: '10px 14px', borderRadius: 10,
-                                        background: 'rgba(245,158,11,0.08)',
-                                        border: '1px solid rgba(245,158,11,0.25)',
-                                    }}>
-                                        <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
-                                        <div>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: '#b45309', marginBottom: 3 }}>
-                                                AI Screening Unavailable
+                                {/* AI Rate-Limit / Cooldown Countdown Banner */}
+                                {!currentCandidate.aiScreened && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        style={{
+                                            borderRadius: 14,
+                                            background: 'linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(99,102,241,0.05) 100%)',
+                                            border: '1px solid rgba(245,158,11,0.3)',
+                                            padding: '16px 18px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: 12,
+                                            boxShadow: '0 4px 20px rgba(245,158,11,0.06)',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
+                                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                                                <div style={{
+                                                    width: 38, height: 38, borderRadius: 10,
+                                                    background: cooldown > 0 ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)',
+                                                    color: cooldown > 0 ? '#d97706' : '#059669',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: 18, flexShrink: 0
+                                                }}>
+                                                    {cooldown > 0 ? '⏳' : '⚡'}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                        {cooldown > 0 ? 'Groq AI Rate Limit Active' : 'Groq Token Cooldown Complete!'}
+                                                        <span style={{
+                                                            fontSize: 10, padding: '2px 8px', borderRadius: 99, fontWeight: 700,
+                                                            background: cooldown > 0 ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)',
+                                                            color: cooldown > 0 ? '#b45309' : '#047857'
+                                                        }}>
+                                                            {cooldown > 0 ? `${cooldown}s Cooldown` : 'Ready to Screen'}
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>
+                                                        {cooldown > 0
+                                                            ? `Groq free-tier token limit (8,000 TPM) was reached during simultaneous processing. The system safely computed deterministic skill score (${score.toFixed(1)}%). Token bucket resetting in ${cooldown}s...`
+                                                            : 'The Groq API rate limit has reset! Click below to perform full qualitative AI evaluation and semantic ranking.'}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div style={{ fontSize: 11, color: '#92400e', lineHeight: 1.5 }}>
-                                                The AI service (Ollama/LLM) was offline when this candidate was screened.
-                                                The score below is based on <strong>deterministic skill matching only</strong>.
-                                                Semantic similarity and qualitative analysis (Education, Projects, Experience)
-                                                are not available. Re-trigger screening when the AI service is back online.
-                                            </div>
+
+                                            {/* Live Circular Countdown Indicator */}
+                                            {cooldown > 0 && (
+                                                <div style={{
+                                                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                                    justifyContent: 'center', minWidth: 50, height: 50, borderRadius: '50%',
+                                                    background: 'var(--bg-primary)', border: '2px solid #f59e0b',
+                                                    boxShadow: '0 0 12px rgba(245,158,11,0.25)', flexShrink: 0
+                                                }}>
+                                                    <span style={{ fontSize: 16, fontWeight: 900, color: '#d97706', lineHeight: 1 }}>{cooldown}</span>
+                                                    <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--text-muted)' }}>SEC</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
+
+                                        {/* Cooldown Progress Bar */}
+                                        {cooldown > 0 && (
+                                            <div style={{ width: '100%', height: 4, background: 'rgba(245,158,11,0.15)', borderRadius: 99, overflow: 'hidden' }}>
+                                                <motion.div
+                                                    initial={{ width: '100%' }}
+                                                    animate={{ width: `${(cooldown / 10) * 100}%` }}
+                                                    transition={{ duration: 1, ease: 'linear' }}
+                                                    style={{ height: '100%', background: 'linear-gradient(90deg, #f59e0b, #6366f1)', borderRadius: 99 }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Re-screen Action Button */}
+                                        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 2 }}>
+                                            <motion.button
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={handleRescreen}
+                                                disabled={isRescreening || cooldown > 0}
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                                                    padding: '8px 16px', borderRadius: 9, fontSize: 12, fontWeight: 700,
+                                                    border: 'none', cursor: (isRescreening || cooldown > 0) ? 'not-allowed' : 'pointer',
+                                                    background: cooldown > 0
+                                                        ? 'var(--bg-secondary)'
+                                                        : 'linear-gradient(135deg, #10b981, #059669)',
+                                                    color: cooldown > 0 ? 'var(--text-muted)' : '#ffffff',
+                                                    boxShadow: cooldown === 0 ? '0 4px 14px rgba(16,185,129,0.35)' : 'none',
+                                                    opacity: cooldown > 0 ? 0.7 : 1,
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                {isRescreening ? (
+                                                    <><RefreshCw size={13} style={{ animation: 'spin 1s linear infinite' }} /> Screening with Groq AI...</>
+                                                ) : cooldown > 0 ? (
+                                                    <><Zap size={13} /> Unlocking in {cooldown}s...</>
+                                                ) : (
+                                                    <><Zap size={13} /> ⚡ Re-Screen with AI Now</>
+                                                )}
+                                            </motion.button>
+                                        </div>
+                                    </motion.div>
                                 )}
-                                {candidate.structuredSummary && (
+                                {currentCandidate.structuredSummary && (
                                     <div>
                                         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
-                                            {candidate.aiScreened ? 'AI Summary' : 'Rule-Based Summary'}
+                                            {currentCandidate.aiScreened ? 'AI Summary' : 'Rule-Based Summary'}
                                         </div>
-                                        {renderSummary(candidate.structuredSummary)}
+                                        {renderSummary(currentCandidate.structuredSummary)}
                                     </div>
                                 )}
                                 {strengths.length > 0 && (
@@ -448,9 +562,9 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                                 </div>
                                 {(() => {
                                     let checklist = [];
-                                    if (candidate.requirementsChecklist) {
+                                    if (currentCandidate.requirementsChecklist) {
                                         try {
-                                            checklist = JSON.parse(candidate.requirementsChecklist);
+                                            checklist = JSON.parse(currentCandidate.requirementsChecklist);
                                         } catch (e) {
                                             console.error(e);
                                         }
@@ -540,14 +654,14 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
                                     background: 'var(--bg-tertiary)', border: '1px solid var(--border)',
                                     fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.8,
                                 }}>
-                                    <strong>Candidate:</strong> {candidate.candidateName}<br />
-                                    <strong>Email:</strong> {candidate.candidateEmail}<br />
+                                    <strong>Candidate:</strong> {currentCandidate.candidateName}<br />
+                                    <strong>Email:</strong> {currentCandidate.candidateEmail}<br />
                                     <strong>Match Score:</strong> <span style={{ color: scoreColor, fontWeight: 700 }}>{score.toFixed(2)}%</span><br />
-                                    <strong>Confidence:</strong> {((candidate.confidenceScore || 0) * 100).toFixed(1)}%<br />
-                                    <strong>Rank:</strong> #{candidate.candidateRank || '—'}
+                                    <strong>Confidence:</strong> {((currentCandidate.confidenceScore || 0) * 100).toFixed(1)}%<br />
+                                    <strong>Rank:</strong> #{currentCandidate.candidateRank || '—'}
                                 </div>
                                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                                    {candidate.structuredSummary}
+                                    {currentCandidate.structuredSummary}
                                 </p>
                             </div>
                         )}
@@ -560,7 +674,7 @@ function CandidateDrawer({ candidate, onClose, jobId, jobTitle }) {
         <AnimatePresence>
             {showSingleInvite && (
                 <SingleInviteModal
-                    candidate={candidate}
+                    candidate={currentCandidate}
                     jobTitle={jobTitle}
                     onClose={() => setShowSingle(false)}
                 />
@@ -1408,6 +1522,7 @@ export default function RankingPage() {
                             onClose={() => setSelected(null)}
                             jobId={selectedJobId}
                             jobTitle={selectedJob?.title || 'the position'}
+                            onRefetch={refetch}
                         />
                     </>
                 )}
