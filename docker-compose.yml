@@ -325,13 +325,22 @@ services:
     depends_on:
       - eureka-server
       - postgres
+      - redis
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFERIPADDRESS=true
       - USE_OPENAI_CHAT=true
       - USE_OLLAMA_CHAT=false
-      - GROQ_MODEL=${GROQ_MODEL_CHAT:-openai/gpt-oss-120b}
+      - GROQ_BASE_URL=https://api.groq.com/openai
+      - GROQ_MODEL=${GROQ_MODEL_CHAT:-${GROQ_MODEL:-qwen/qwen3.8-27b}}
       - GROQ_API_KEY=${GROQ_API_KEY_CHAT:-${GROQ_API_KEY}}
+      - GROQ_MODEL_CHAT=${GROQ_MODEL_CHAT:-${GROQ_MODEL:-qwen/qwen3.8-27b}}
+      - GROQ_API_KEY_CHAT=${GROQ_API_KEY_CHAT:-${GROQ_API_KEY}}
+      - SPRING_AI_OPENAI_BASE_URL=https://api.groq.com/openai
+      - SPRING_AI_OPENAI_API_KEY=${GROQ_API_KEY_CHAT:-${GROQ_API_KEY}}
+      - SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL=${GROQ_MODEL_CHAT:-${GROQ_MODEL:-qwen/qwen3.8-27b}}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/talent_db
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434

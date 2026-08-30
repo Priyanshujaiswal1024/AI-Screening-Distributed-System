@@ -16,6 +16,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:${SPRING_REDIS_HOST:redis}}
+      port: ${SPRING_DATA_REDIS_PORT:${SPRING_REDIS_PORT:6379}}
   ai:
     ollama:
       base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
@@ -31,8 +35,8 @@ spring:
       chat:
         enabled: ${USE_OPENAI_CHAT:true} # Default = Groq Cloud (Ultra-fast response)
         options:
-          model: ${GROQ_MODEL_CHAT:${GROQ_MODEL:openai/gpt-oss-120b}}
-          max-tokens: 4096
+          model: ${GROQ_MODEL_CHAT:${GROQ_MODEL:qwen/qwen3.8-27b}}
+          max-tokens: 2048
           temperature: 0.3
       embedding:
         enabled: false # Embeddings always handled locally/efficiently via nomic-embed-text
