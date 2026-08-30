@@ -109,7 +109,7 @@ public class OllamaScreeningService {
 
     public ScreeningResult screenResume(ScreeningRequest request) {
         String resumeSample = request.getResumeText() != null
-                ? request.getResumeText().substring(0, Math.min(5000, request.getResumeText().length()))
+                ? request.getResumeText().substring(0, Math.min(2500, request.getResumeText().length()))
                 : "";
 
         String prompt =
@@ -144,29 +144,41 @@ public class OllamaScreeningService {
         ScreeningResult result = new ScreeningResult();
         boolean parsedSuccessfully = false;
 
-        try {
-            String response = chatClient.prompt()
-                    .messages(new UserMessage(prompt))
-                    .call()
-                    .content();
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                String response = chatClient.prompt()
+                        .messages(new UserMessage(prompt))
+                        .call()
+                        .content();
 
-            if (response != null && !response.isBlank()) {
-                String clean = response.replaceAll("```json|```", "").trim();
-                int start = clean.indexOf('{');
-                int end = clean.lastIndexOf('}');
-                if (start != -1 && end != -1 && end > start) {
-                    clean = clean.substring(start, end + 1);
-                }
+                if (response != null && !response.isBlank()) {
+                    String clean = response.replaceAll("```json|```", "").trim();
+                    int start = clean.indexOf('{');
+                    int end = clean.lastIndexOf('}');
+                    if (start != -1 && end != -1 && end > start) {
+                        clean = clean.substring(start, end + 1);
+                    }
 
-                try {
-                    result = objectMapper.readValue(clean, ScreeningResult.class);
-                    parsedSuccessfully = true;
-                } catch (Exception parseEx) {
-                    log.warn("[OllamaScreeningService] Direct Jackson mapping failed: {}", parseEx.getMessage());
+                    try {
+                        result = objectMapper.readValue(clean, ScreeningResult.class);
+                        parsedSuccessfully = true;
+                        break;
+                    } catch (Exception parseEx) {
+                        log.warn("[OllamaScreeningService] Direct Jackson mapping failed: {}", parseEx.getMessage());
+                    }
                 }
+            } catch (Exception ex) {
+                if (attempt == 1 && ex.getMessage() != null && ex.getMessage().contains("429")) {
+                    log.info("[OllamaScreeningService] Rate limit (429) hit from Groq. Waiting 6 seconds before retry...");
+                    try {
+                        Thread.sleep(6000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                    continue;
+                }
+                log.warn("[OllamaScreeningService] LLM Provider notice/rate-limit: {}. Proceeding with deterministic fallback screening.", ex.getMessage());
             }
-        } catch (Exception ex) {
-            log.warn("[OllamaScreeningService] LLM Provider notice/rate-limit: {}. Proceeding with deterministic fallback screening.", ex.getMessage());
         }
 
         if (!parsedSuccessfully) {

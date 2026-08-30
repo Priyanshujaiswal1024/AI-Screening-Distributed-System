@@ -185,7 +185,7 @@ public class RankingService {
 
         // Try context-based AI screening via Ollama
         try {
-            String resumeExcerpt = fullResumeText.substring(0, Math.min(15000, fullResumeText.length()));
+            String resumeExcerpt = fullResumeText.substring(0, Math.min(2500, fullResumeText.length()));
 
             AIScreeningServiceClient.ScreeningRequestDto screenReq = 
                     new AIScreeningServiceClient.ScreeningRequestDto(resumeExcerpt, jdText);

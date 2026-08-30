@@ -155,7 +155,7 @@ public class AIScreeningService {
             }
 
             try {
-                String excerpt = parsedText.substring(0, Math.min(6000, parsedText.length()));
+                String excerpt = parsedText.substring(0, Math.min(2500, parsedText.length()));
 
                 String prompt =
                         "Analyze the following resume text carefully and extract the candidate's core details.\n" +
@@ -176,71 +176,89 @@ public class AIScreeningService {
                         "- Do not include any markdown ticks or text outside the JSON.\n\n" +
                         "Resume text:\n" + excerpt;
 
-                String extraction = chatClient.prompt()
-                        .messages(new UserMessage(prompt))
-                        .call()
-                        .content();
-
-                String clean = extraction.replaceAll("```json|```", "").trim();
-                int startIdx = clean.indexOf('{');
-                int endIdx = clean.lastIndexOf('}');
-                if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
-                    clean = clean.substring(startIdx, endIdx + 1);
-                }
-
-                String nameMatch  = extractJsonField(clean, "name");
-                String emailMatch = extractJsonField(clean, "email");
-
-                if (needName && nameMatch != null && !nameMatch.isBlank()
-                        && !nameMatch.equals("Unknown Candidate")) {
-                    candidateName = nameMatch;
-                }
-                if (needEmail && emailMatch != null && !emailMatch.isBlank()
-                        && !emailMatch.equals("unknown@email.com")) {
-                    candidateEmail = emailMatch;
-                }
-
-                try {
-                    String expStr = extractJsonField(clean, "totalExperience");
-                    if (expStr != null && !expStr.isBlank()) {
-                        double parsed = Double.parseDouble(expStr);
-                        extractedExp = (parsed < 1.0) ? 0.0 : parsed;
+                String extraction = null;
+                for (int attempt = 1; attempt <= 2; attempt++) {
+                    try {
+                        extraction = chatClient.prompt()
+                                .messages(new UserMessage(prompt))
+                                .call()
+                                .content();
+                        if (extraction != null && !extraction.isBlank()) {
+                            break;
+                        }
+                    } catch (Exception ex) {
+                        if (attempt == 1 && ex.getMessage() != null && ex.getMessage().contains("429")) {
+                            log.info("[AIScreening] Rate limit 429 during extraction. Waiting 6 seconds before retry...");
+                            try {
+                                Thread.sleep(6000);
+                            } catch (InterruptedException ie) {
+                                Thread.currentThread().interrupt();
+                            }
+                            continue;
+                        }
+                        log.warn("[AIScreening] Extraction LLM call failed: {}", ex.getMessage());
                     }
-                } catch (Exception e) {
-                    log.warn("[AIScreening] Failed to parse extracted totalExperience: {}", e.getMessage());
                 }
 
-                // Extract all skills from the unified extraction response
-                try {
-                    Set<String> normSet = new LinkedHashSet<>();
-                    if (clean.contains("\"skills\"")) {
-                        com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(clean);
-                        if (rootNode.has("skills") && rootNode.get("skills").isArray()) {
-                            for (com.fasterxml.jackson.databind.JsonNode sn : rootNode.get("skills")) {
-                                if (sn.isTextual() && !sn.asText().isBlank()) {
-                                    String norm = skillNormalizerService.normalize(sn.asText().trim());
-                                    if (norm != null && !norm.isBlank()) {
-                                        normSet.add(norm);
+                if (extraction != null && !extraction.isBlank()) {
+                    String clean = extraction.replaceAll("```json|```", "").trim();
+                    int startIdx = clean.indexOf('{');
+                    int endIdx = clean.lastIndexOf('}');
+                    if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+                        clean = clean.substring(startIdx, endIdx + 1);
+                    }
+
+                    String nameMatch  = extractJsonField(clean, "name");
+                    String emailMatch = extractJsonField(clean, "email");
+
+                    if (needName && nameMatch != null && !nameMatch.isBlank()
+                            && !nameMatch.equals("Unknown Candidate")) {
+                        candidateName = nameMatch;
+                    }
+                    if (needEmail && emailMatch != null && !emailMatch.isBlank()
+                            && !emailMatch.equals("unknown@email.com")) {
+                        candidateEmail = emailMatch;
+                    }
+
+                    try {
+                        String expStr = extractJsonField(clean, "totalExperience");
+                        if (expStr != null && !expStr.isBlank()) {
+                            double parsed = Double.parseDouble(expStr);
+                            extractedExp = (parsed < 1.0) ? 0.0 : parsed;
+                        }
+                    } catch (Exception e) {
+                        log.warn("[AIScreening] Failed to parse extracted totalExperience: {}", e.getMessage());
+                    }
+
+                    // Extract all skills from the unified extraction response
+                    try {
+                        Set<String> normSet = new LinkedHashSet<>();
+                        if (clean.contains("\"skills\"")) {
+                            com.fasterxml.jackson.databind.JsonNode rootNode = new com.fasterxml.jackson.databind.ObjectMapper().readTree(clean);
+                            if (rootNode.has("skills") && rootNode.get("skills").isArray()) {
+                                for (com.fasterxml.jackson.databind.JsonNode sn : rootNode.get("skills")) {
+                                    if (sn.isTextual() && !sn.asText().isBlank()) {
+                                        String norm = skillNormalizerService.normalize(sn.asText().trim());
+                                        if (norm != null && !norm.isBlank()) {
+                                            normSet.add(norm);
+                                        } else {
+                                            normSet.add(sn.asText().trim());
+                                        }
                                     }
                                 }
                             }
                         }
+                        if (!normSet.isEmpty()) {
+                            extractedSkills = String.join(", ", normSet);
+                        }
+                    } catch (Exception e) {
+                        log.warn("[AIScreening] Failed to parse extracted skills JSON array: {}", e.getMessage());
                     }
 
-                    if (!normSet.isEmpty()) {
-                        extractedSkills = String.join(", ", normSet);
+                    String noticeMatch = extractJsonField(clean, "noticePeriod");
+                    if (noticeMatch != null && !noticeMatch.isBlank()) {
+                        extractedNotice = noticeMatch;
                     }
-                } catch (Exception e) {
-                    log.warn("[FIX] [AIScreening] Failed to parse/normalize skills: {}", e.getMessage());
-                }
-
-                try {
-                    String npStr = extractJsonField(clean, "noticePeriod");
-                    if (npStr != null && !npStr.isBlank()) {
-                        extractedNotice = npStr;
-                    }
-                } catch (Exception e) {
-                    log.warn("[AIScreening] Failed to parse extracted noticePeriod: {}", e.getMessage());
                 }
 
                 log.info("[AIScreening] LLM extracted details: name='{}' email='{}' exp={} skills='{}' notice='{}'",
