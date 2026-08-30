@@ -247,8 +247,20 @@ public class ChatService {
                             hybridRetrievalService.retrieve(query.text(), resumeId)
                     );
 
-            // Direct high-precision RAG advisor using Hybrid pgvector + keyword search and reranking
+            // Advanced Multi-Stage RAG Pipeline: Query Rewriting + Multi-Query Expansion + Hybrid pgvector Search + Cross-Encoder Reranking
             RetrievalAugmentationAdvisor ragAdvisor = RetrievalAugmentationAdvisor.builder()
+                    .queryTransformers(
+                            RewriteQueryTransformer.builder()
+                                    .chatClientBuilder(ChatClient.builder(chatModel))
+                                    .build()
+                    )
+                    .queryExpander(
+                            MultiQueryExpander.builder()
+                                    .chatClientBuilder(ChatClient.builder(chatModel))
+                                    .numberOfQueries(3)
+                                    .includeOriginal(true)
+                                    .build()
+                    )
                     .documentRetriever(retriever)
                     .documentJoiner(new ConcatenationDocumentJoiner())
                     .build();
