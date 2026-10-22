@@ -82,6 +82,8 @@ spec:
           env:
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -165,6 +167,8 @@ spec:
               value: "kafka:9092"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
@@ -244,6 +248,8 @@ spec:
               value: "kafka:9092"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
           resources:
             requests:
               cpu: 150m
@@ -314,6 +320,8 @@ spec:
               value: "kafka:9092"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
@@ -396,6 +404,8 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
           resources:
             requests:
               cpu: 150m
@@ -468,6 +478,8 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
             - name: SPRING_AI_OPENAI_API_KEY
               value: "YOUR_GROQ_API_KEY"
             - name: SPRING_AI_OPENAI_BASE_URL
@@ -576,6 +588,8 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
           resources:
             requests:
               cpu: 200m
@@ -650,6 +664,8 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
             - name: SPRING_AI_OPENAI_API_KEY
               value: "YOUR_GROQ_API_KEY"
             - name: SPRING_AI_OPENAI_BASE_URL
@@ -737,6 +753,8 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
             - name: SPRING_DATA_REDIS_HOST
               value: "redis"
             - name: SPRING_DATA_REDIS_URL
