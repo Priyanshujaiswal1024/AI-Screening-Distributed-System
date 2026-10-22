@@ -481,11 +481,22 @@ spec:
             - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
               value: "true"
             - name: SPRING_AI_OPENAI_API_KEY
-              value: "YOUR_GROQ_API_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: screening-key
             - name: SPRING_AI_OPENAI_BASE_URL
               value: "https://api.groq.com/openai"
             - name: GROQ_API_KEY
-              value: "YOUR_GROQ_API_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: screening-key
+            - name: GROQ_API_KEY_SCREENING
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: screening-key
             - name: USE_OPENAI_CHAT
               value: "true"
             - name: USE_OLLAMA_CHAT
@@ -667,11 +678,22 @@ spec:
             - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
               value: "true"
             - name: SPRING_AI_OPENAI_API_KEY
-              value: "YOUR_GROQ_API_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: chat-key
             - name: SPRING_AI_OPENAI_BASE_URL
               value: "https://api.groq.com/openai"
             - name: GROQ_API_KEY
-              value: "YOUR_GROQ_API_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: chat-key
+            - name: GROQ_API_KEY_CHAT
+              valueFrom:
+                secretKeyRef:
+                  name: groq-secret
+                  key: chat-key
             - name: USE_OPENAI_CHAT
               value: "true"
             - name: USE_OLLAMA_CHAT
