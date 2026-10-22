@@ -501,6 +501,12 @@ spec:
               value: "true"
             - name: USE_OLLAMA_CHAT
               value: "false"
+            - name: GROQ_MODEL
+              value: "qwen/qwen3.8-27b"
+            - name: GROQ_MODEL_SCREENING
+              value: "qwen/qwen3.8-27b"
+            - name: SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL
+              value: "qwen/qwen3.8-27b"
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
@@ -698,6 +704,12 @@ spec:
               value: "true"
             - name: USE_OLLAMA_CHAT
               value: "false"
+            - name: GROQ_MODEL
+              value: "qwen/qwen3.8-27b"
+            - name: GROQ_MODEL_CHAT
+              value: "qwen/qwen3.8-27b"
+            - name: SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL
+              value: "qwen/qwen3.8-27b"
           resources:
             requests:
               cpu: 250m
