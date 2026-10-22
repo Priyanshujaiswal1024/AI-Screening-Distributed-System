@@ -31,6 +31,9 @@ public class StorageService {
     @Value("${aws.s3.region:eu-north-1}")
     private String region;
 
+    @Value("${resume.service.base-url:http://resume-management-service:8073}")
+    private String resumeServiceBaseUrl;
+
     public static final String LOCAL_DIR = System.getProperty("java.io.tmpdir") + File.separator + "talent_resumes";
 
     public String upload(MultipartFile file) {
@@ -62,7 +65,7 @@ public class StorageService {
             Path targetPath = uploadPath.resolve(filename);
             Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
             log.info("[StorageService] Saved to local fallback storage: {}", targetPath.toAbsolutePath());
-            return "http://talent-resume-service:8073/api/v1/resumes/raw-file/" + filename;
+            return resumeServiceBaseUrl + "/api/v1/resumes/raw-file/" + filename;
         } catch (Exception ex) {
             log.error("[StorageService] Local storage fallback failed: {}", ex.getMessage(), ex);
             throw new RuntimeException("Failed to store file in S3 and local storage: " + ex.getMessage(), ex);
