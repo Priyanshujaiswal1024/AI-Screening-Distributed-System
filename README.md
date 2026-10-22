@@ -512,32 +512,62 @@ sequenceDiagram
 - **Hybrid Scoring:** Semantic cosine similarity (EmbeddingModel) + Deterministic Java skill normalizer
 - **Messaging & Async:** Apache Kafka (RetryableTopic, Dead Letter Topics, Idempotent consumers)
 - **Databases:** PostgreSQL, PgVector (Vector DB for RAG + embeddings), Redis (Sorted Sets for leaderboard)
-- **Infrastructure:** Docker, Docker Compose, AWS EC2, AWS S3
+- **Infrastructure:** Docker, Docker Compose, Kubernetes (EKS), Terraform, AWS ECR, AWS S3, AWS ELB
 - **Resilience:** Resilience4j (Circuit Breaker, Retry, TimeLimiter), graceful AI fallback
 - **Observability:** Prometheus, Grafana, Micrometer
+- **Frontend & CDN:** React, Vite, TailwindCSS, Vercel
 
 ---
 
-## 🚀 Deployment (AWS EC2)
+## 🚀 Deployment Guide
 
-The entire application runs as a cluster of highly available Docker containers.
+### Option 1: Cloud Production (AWS EKS + Terraform)
+
+The platform is enterprise-ready and deployed to AWS EKS using Infrastructure as Code (Terraform) and Kubernetes manifests.
+
+1. **Deploy Infrastructure via Terraform:**
+   ```bash
+   cd terraform
+   terraform init
+   terraform apply -auto-approve
+   ```
+2. **Configure Kubernetes CLI:**
+   ```bash
+   aws eks update-kubeconfig --region eu-north-1 --name talentiq-eks-cluster
+   ```
+3. **Deploy Microservices & Databases to EKS:**
+   ```bash
+   kubectl apply -f k8s/
+   ```
+4. **Get Public API Gateway Endpoint:**
+   ```bash
+   kubectl get svc api-gateway -n talent-platform
+   ```
+
+### Option 2: Local Development (Docker Compose)
 
 ```bash
 # Clone the repository
 git clone https://github.com/Priyanshujaiswal1024/AI-Screening-Distributed-System.git
 cd AI-Screening-Distributed-System
 
-# Start Infrastructure (Postgres, Kafka, Zookeeper, Redis, Ollama)
-docker compose up -d postgres kafka zookeeper redis ollama
-
-# Pull the embedding model directly into the container
-docker exec talent-ollama ollama pull nomic-embed-text
-
-# Start all 11 Microservices
+# Start Infrastructure & Microservices
 docker compose up -d
+
+# Start Frontend (React/Vite)
+cd frontend
+npm install
+npm run dev
 ```
+
+### Option 3: Frontend Deployment (Vercel)
+
+The frontend is deployed on Vercel and dynamically proxies all `/api/*` traffic to the AWS Load Balancer using `frontend/vercel.json` with zero CORS issues.
+
+---
 
 <div align="center">
   <br>
   <b>Developed by Priyanshu Jaiswal</b>
 </div>
+

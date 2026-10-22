@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: eureka-server
-          image: eureka-server:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/eureka-server:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8761
           resources:
@@ -34,13 +34,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8761
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8761
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
 ---
 apiVersion: v1
@@ -75,8 +75,8 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: api-gateway:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/api-gateway:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8090
           env:
@@ -98,13 +98,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8090
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8090
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
 ---
 apiVersion: v1
@@ -113,8 +113,10 @@ metadata:
   name: api-gateway
   namespace: talent-platform
 spec:
+  type: LoadBalancer
   ports:
     - port: 8090
+      targetPort: 8090
   selector:
     app: api-gateway
 ---
@@ -139,8 +141,8 @@ spec:
     spec:
       containers:
         - name: authentication-service
-          image: authentication-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/authentication-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8091
           env:
@@ -175,14 +177,18 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8091
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8091
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
 ---
 apiVersion: v1
 kind: Service
@@ -216,8 +222,8 @@ spec:
     spec:
       containers:
         - name: user-management-service
-          image: user-management-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/user-management-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8069
           env:
@@ -245,13 +251,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8069
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8069
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
 ---
 apiVersion: v1
@@ -286,8 +292,8 @@ spec:
     spec:
       containers:
         - name: resume-management-service
-          image: resume-management-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/resume-management-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8073
           env:
@@ -325,13 +331,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8073
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8073
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
 ---
 apiVersion: v1
@@ -366,8 +372,8 @@ spec:
     spec:
       containers:
         - name: job-description-service
-          image: job-description-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/job-description-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8084
           env:
@@ -397,13 +403,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8084
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8084
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
 ---
 apiVersion: v1
@@ -438,8 +444,8 @@ spec:
     spec:
       containers:
         - name: ai-screening-service
-          image: ai-screening-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/ai-screening-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8075
           env:
@@ -458,6 +464,16 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: SPRING_AI_OPENAI_API_KEY
+              value: "YOUR_GROQ_API_KEY"
+            - name: SPRING_AI_OPENAI_BASE_URL
+              value: "https://api.groq.com/openai"
+            - name: GROQ_API_KEY
+              value: "YOUR_GROQ_API_KEY"
+            - name: USE_OPENAI_CHAT
+              value: "true"
+            - name: USE_OLLAMA_CHAT
+              value: "false"
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
@@ -534,8 +550,8 @@ spec:
     spec:
       containers:
         - name: candidate-ranking-service
-          image: candidate-ranking-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/candidate-ranking-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8086
           env:
@@ -567,13 +583,13 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8086
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8086
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
 ---
 apiVersion: v1
@@ -608,8 +624,8 @@ spec:
     spec:
       containers:
         - name: recruiter-chat-service
-          image: recruiter-chat-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/recruiter-chat-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8087
           env:
@@ -630,6 +646,16 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: SPRING_AI_OPENAI_API_KEY
+              value: "YOUR_GROQ_API_KEY"
+            - name: SPRING_AI_OPENAI_BASE_URL
+              value: "https://api.groq.com/openai"
+            - name: GROQ_API_KEY
+              value: "YOUR_GROQ_API_KEY"
+            - name: USE_OPENAI_CHAT
+              value: "true"
+            - name: USE_OLLAMA_CHAT
+              value: "false"
           resources:
             requests:
               cpu: 250m
@@ -696,8 +722,8 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: notification-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/notification-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8088
           env:
@@ -707,6 +733,16 @@ spec:
               value: "http://ollama:11434"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://eureka-server:8761/eureka/"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "redis"
+            - name: SPRING_DATA_REDIS_URL
+              value: "redis://redis:6379"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+            - name: MAIL_USERNAME
+              value: "priyanshjais123@gmail.com"
+            - name: MAIL_PASSWORD
+              value: "YOUR_GMAIL_APP_PASSWORD"
           resources:
             requests:
               cpu: 100m
@@ -718,14 +754,18 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8088
-            initialDelaySeconds: 45
+            initialDelaySeconds: 120
             periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8088
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
 ---
 apiVersion: v1
 kind: Service

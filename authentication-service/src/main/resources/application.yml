@@ -21,7 +21,8 @@ spring:
 
   data:
     redis:
-      url: rediss://default:gQAAAAAAAfhzAAIgcDFmYzk2ZjM4ZjAxMWE0ZTQ4OTc0ZDMwZGYxZGRjNjBjMQ@lucky-cowbird-129139.upstash.io:6379
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
 
   kafka:
     bootstrap-servers: localhost:9092

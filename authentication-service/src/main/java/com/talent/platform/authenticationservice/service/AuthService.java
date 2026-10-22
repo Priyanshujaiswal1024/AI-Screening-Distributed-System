@@ -107,6 +107,7 @@ public class AuthService {
     }
 
     // Forgot password
+    @Transactional
     public String forgotPassword(String email) {
         String otp = otpService.generateAndSave("forgot:" + email);
         publishEvent("FORGOT_PASSWORD", email, Map.of("otp", otp));

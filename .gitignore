@@ -47,3 +47,9 @@ interview_*.md
 user_*.md
 
 
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log

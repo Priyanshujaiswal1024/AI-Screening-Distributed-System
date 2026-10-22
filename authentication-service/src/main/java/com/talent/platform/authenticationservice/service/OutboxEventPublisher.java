@@ -23,7 +23,7 @@ public class OutboxEventPublisher {
      * Serializes event and persists it to outbox table.
      * Runs in existing transaction to guarantee atomic persistence with business logic.
      */
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     public void publish(String topic, String key, Map<String, Object> payload) {
         try {
             String jsonPayload = objectMapper.writeValueAsString(payload);

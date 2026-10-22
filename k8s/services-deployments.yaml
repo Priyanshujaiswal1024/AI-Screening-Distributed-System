@@ -27,8 +27,8 @@ spec:
     spec:
       containers:
         - name: authentication-service
-          image: talent-platform/authentication-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/authentication-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
 ---
@@ -61,8 +61,8 @@ spec:
     spec:
       containers:
         - name: user-management-service
-          image: talent-platform/user-management-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/user-management-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8082
           env:
@@ -101,8 +101,8 @@ spec:
     spec:
       containers:
         - name: resume-management-service
-          image: talent-platform/resume-management-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/resume-management-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8083
           env:
@@ -146,8 +146,8 @@ spec:
     spec:
       containers:
         - name: job-description-service
-          image: talent-platform/job-description-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/job-description-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8084
           env:
@@ -191,8 +191,8 @@ spec:
     spec:
       containers:
         - name: ai-screening-service
-          image: talent-platform/ai-screening-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/ai-screening-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8085
           env:
@@ -236,8 +236,8 @@ spec:
     spec:
       containers:
         - name: candidate-ranking-service
-          image: talent-platform/candidate-ranking-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/candidate-ranking-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8086
           env:
@@ -291,8 +291,8 @@ spec:
     spec:
       containers:
         - name: recruiter-chat-service
-          image: talent-platform/recruiter-chat-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/recruiter-chat-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8087
           env:
@@ -331,8 +331,8 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: talent-platform/notification-service:latest
-          imagePullPolicy: Never
+          image: 116429398202.dkr.ecr.eu-north-1.amazonaws.com/talentiq/notification-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8088
           env:

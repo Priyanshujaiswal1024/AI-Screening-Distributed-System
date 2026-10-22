@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "http://16.170.211.126:8090/api/:match*"
+      "destination": "http://adf95988b597c46998cdb643f8dea75f-421776318.eu-north-1.elb.amazonaws.com:8090/api/:match*"
     },
     {
       "source": "/(.*)",
