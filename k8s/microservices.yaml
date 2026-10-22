@@ -155,8 +155,12 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: password
+            - name: SPRING_DATA_REDIS_URL
+              value: "redis://redis:6379"
             - name: SPRING_DATA_REDIS_HOST
               value: "redis"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka:9092"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
